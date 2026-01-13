@@ -139,7 +139,7 @@ const scrollToBottom = (ref, containerRef) => {
   useEffect(() => {
     scrollToBottom(logsEndRef, logsContainerRef);  }, [ragLogs]);
 
-  // --- LOGIC: Simulated WUT + WAY Architecture ---
+  // --- LOGIC: Real WUT + WAY Architecture (Connected to Render Backend) ---
   const handleSend = async (e) => {
     e.preventDefault();
     if (!input.trim()) return;
@@ -148,237 +148,43 @@ const scrollToBottom = (ref, containerRef) => {
     setInput('');
     setMessages(prev => [...prev, { role: 'user', content: userMsg }]);
     setIsTyping(true);
-    setRagLogs([]); 
-    setSystemStatus({ state: 'PROCESSING', confidence: 0, dept: 'Detecting...' });
+    setRagLogs([]); // Clear logs
 
-    // Live Stats Update
-    setLiveStats(prev => ({ ...prev, total: prev.total + 1 }));
+    try {
+        // Log for UI
+        setRagLogs(prev => [...prev, { time: new Date().toLocaleTimeString(), text: "📡 Connecting to Hybrid Brain..." }]);
+        
+        // 1. Send to Backend
+        const response = await fetch('/api/chat', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ message: userMsg })
+        });
 
-    // --- STEP 1: WUT Classifier ---
-    await addLog("WUT: Receiving query...", 200);
-    
-    let dept = "General";
-    let intent = "question";
-    let urgency = "low";
-    let scenario = "unknown";
+        if (!response.ok) throw new Error(`Server Error: ${response.status}`);
 
-    if (userMsg.includes("รหัสผ่าน") || userMsg.includes("password") || userMsg.includes("อีเมล")) {
-      dept = "IT";
-      scenario = "password_reset";
-    } else if (userMsg.includes("ลา") || userMsg.includes("vacation") || userMsg.includes("leave")) {
-      dept = "HR";
-          } else if (userMsg.includes("vpn") || userMsg.includes("เชื่อมต่อ") || userMsg.includes("remote work")) {
-      dept = "IT";
-      scenario = "vpn_issue";
-    } else if (userMsg.includes("อีเมลเต็ม") || userMsg.includes("storage") || userMsg.includes("mailbox")) {
-      dept = "IT";
-      scenario = "email_storage";
-    } else if (userMsg.includes("ติดตั้ง") || userMsg.includes("install") || userMsg.includes("software") || userMsg.includes("โปรแกรม")) {
-      dept = "IT";
-      intent = "action_request";
-      scenario = "software_install";
-          } else if (userMsg.includes("สลิปเงินเดือน") || userMsg.includes("payslip") || userMsg.includes("เงินเดือน")) {
-      dept = "HR";
-      scenario = "payslip_request";
-    } else if (userMsg.includes("ขอหนังสือรับรอง") || userMsg.includes("certificate") || userMsg.includes("employment letter")) {
-      dept = "HR";
-      intent = "action_request";
-      scenario = "work_certificate";
-    } else if (userMsg.includes("ทดลองงาน") || userMsg.includes("probation") || userMsg.includes("ผ่านโปร")) {
-      dept = "HR";
-      scenario = "probation_question";
-          } else if (userMsg.includes("เบิกค่าใช้จ่าย") || userMsg.includes("expense") || userMsg.includes("claim")) {
-      dept = "Accounting";
-      scenario = "expense_claim";
-    } else if (userMsg.includes("สถานะชำระเงิน") || userMsg.includes("invoice") || userMsg.includes("payment") || userMsg.includes("จ่ายเงิน")) {
-      dept = "Accounting";
-      intent = "action_request";
-      urgency = "high";
-      scenario = "invoice_payment";
-    } else if (userMsg.includes("จองห้องประชุม") || userMsg.includes("meeting room") || userMsg.includes("book room")) {
-      dept = "General";
-      scenario = "meeting_room";
-    } else if (userMsg.includes("ที่จอดรถ") || userMsg.includes("parking") || userMsg.includes("บัตรจอด")) {
-      dept = "General";
-      intent = "action_request";
-      scenario = "parking_pass";
-      intent = "action_request";
-      scenario = "leave_request";
-    } else if (userMsg.includes("งบ") || userMsg.includes("อนุมัติ") || userMsg.includes("approve") || userMsg.includes("เงิน")) {
-      dept = "Accounting";
-      intent = "action_request";
-      urgency = "high";
-      scenario = "budget_approval";
+        const data = await response.json();
+        
+        // 2. Display Answer
+        setMessages(prev => [...prev, { 
+            role: 'assistant', 
+            content: data.response, 
+            type: 'answer',
+            meta: { confidence: 1.0, doc: 'Real-RAG', action: 'ANSWER' }
+        }]);
+
+        setRagLogs(prev => [...prev, { time: new Date().toLocaleTimeString(), text: "✅ Answer Received" }]);
+
+    } catch (error) {
+        console.error("Chat Error:", error);
+        setMessages(prev => [...prev, { 
+            role: 'assistant', 
+            content: `Error: ${error.message}. (Check Backend Connection)`, 
+            type: 'error' 
+        }]);
+    } finally {
+        setIsTyping(false);
     }
-
-    setSystemStatus(prev => ({ ...prev, dept }));
-    await addLog(`WUT Classifier: Dept=${dept} | Intent=${intent} | Urgency=${urgency}`, 600);
-
-    // --- STEP 2: WAY RAG Engine ---
-    await addLog("WAY: Vectorizing query...", 1000);
-    await addLog(`WAY: Searching Qdrant (top_k=3)...`, 1400);
-
-    let ragResponse = "";
-    let confidence = 0.0;
-    let docRef = "";
-    let action = "ANSWER";
-    let vectorScore = 0.0;
-
-    if (scenario === "password_reset") {
-      await addLog(`WAY: Found 'IT-001: Password Reset Procedure'`, 1800);
-      ragResponse = "คุณสามารถรีเซ็ตรหัสผ่านอีเมลได้ที่ portal.mango.co.th โดยเลือกเมนู 'Forgot Password' และยืนยันตัวตนผ่าน OTP ที่ส่งไปเบอร์มือถือครับ";
-      confidence = 0.92;
-      vectorScore = 0.915;
-      docRef = "IT-001";
-    } else if (scenario === "leave_request") {
-      await addLog(`WAY: Found 'HR-050: Leave Policy'`, 1800);
-      ragResponse = "สำหรับการลาพักร้อน คุณต้องกรอกแบบฟอร์มในระบบ Mango HR และรอหัวหน้าอนุมัติครับ (ผมจะเปิด Ticket ให้ HR ดำเนินการต่อนะครับ)";
-      confidence = 0.88;
-      vectorScore = 0.876;
-      docRef = "HR-050";
-    } else if (scenario === "budget_approval") {
-      await addLog(`WAY: Found 'ACC-101: Budget Approval'`, 1800);
-      ragResponse = "การอนุมัติงบประมาณเกิน 500,000 บาท จำเป็นต้องได้รับการอนุมัติจาก CFO โดยตรงและต้องมีเอกสาร TOR แนบครับ";
-      confidence = 0.85; 
-      vectorScore = 0.842;
-      docRef = "ACC-101";
-        } else if (scenario === "vpn_issue") {
-      await addLog(`WAY: Found 'IT-002: VPN Connection Guide'`, 1800);
-      ragResponse = "หาก VPN เชื่อมไม่ได้ ลอง 1) Restart Router 2) ตรวจสอบ username/password 3) Clear VPN cache หรือติดต่อ IT Support: ext 1234 ครับ";
-      confidence = 0.89;
-      vectorScore = 0.885;
-      docRef = "IT-002";
-    } else if (scenario === "email_storage") {
-      await addLog(`WAY: Found 'IT-003: Email Storage Management'`, 1800);
-      ragResponse = "อีเมลเต็มแก้ไขได้โดย 1) ลบอีเมลเก่า 2) Archive ไป PST file 3) ขอเพิ่ม quota ได้ที่ IT Helpdesk ครับ (max 10GB/user)";
-      confidence = 0.91;
-      vectorScore = 0.908;
-      docRef = "IT-003";
-    } else if (scenario === "software_install") {
-      await addLog(`WAY: Found 'IT-004: Software Installation Policy'`, 1800);
-      ragResponse = "การติดตั้งโปรแกรมต้องขออนุมัติจาก IT Manager ก่อนครับ (ผมจะเปิด Ticket ให้ IT ดำเนินการต่อนะครับ)";
-      confidence = 0.86;
-      vectorScore = 0.858;
-      docRef = "IT-004";
-        } else if (scenario === "payslip_request") {
-      await addLog(`WAY: Found 'HR-051: Payslip Access'`, 1800);
-      ragResponse = "สลิปเงินเดือน download ได้ที่ Mango HR Portal > Payroll > Payslip History ครับ (ถ้าเข้าไม่ได้ ติดต่อ HR ext 2001)";
-      confidence = 0.93;
-      vectorScore = 0.925;
-      docRef = "HR-051";
-    } else if (scenario === "work_certificate") {
-      await addLog(`WAY: Found 'HR-052: Certificate Request'`, 1800);
-      ragResponse = "ขอหนังสือรับรองแล้วนะครับ (ผมจะเปิด Ticket ให้ HR ออกเอกสารให้ ใช้เวลา 3-5 วันทำการครับ)";
-      confidence = 0.87;
-      vectorScore = 0.871;
-      docRef = "HR-052";
-    } else if (scenario === "probation_question") {
-      await addLog(`WAY: Found 'HR-053: Probation Policy'`, 1800);
-      ragResponse = "บริษัทมีระยะทดลองงาน 120 วัน ประเมินผลโดย Manager ทุก 60/90/120 วัน ผ่านโปรจะได้สิทธิ์เต็มที่ครับ";
-      confidence = 0.90;
-      vectorScore = 0.898;
-      docRef = "HR-053";
-        } else if (scenario === "expense_claim") {
-      await addLog(`WAY: Found 'ACC-102: Expense Claim Process'`, 1800);
-      ragResponse = "เบิกค่าใช้จ่ายได้ที่ระบบ Expense Cloud > Submit Claim + แนบใบเสร็จ รอ Manager approve แล้วจ่ายใน 7 วันทำการครับ";
-      confidence = 0.88;
-      vectorScore = 0.879;
-      docRef = "ACC-102";
-    } else if (scenario === "invoice_payment") {
-      await addLog(`WAY: Found 'ACC-103: Invoice Payment Inquiry'`, 1800);
-      ragResponse = "สถานะการชำระเงิน Invoice ต้องตรวจสอบโดย Accounting โดยตรงครับ (ข้อมูลทางการเงินต้องได้รับการตรวจสอบจากมนุษย์)";
-      confidence = 0.82;
-      vectorScore = 0.816;
-      docRef = "ACC-103";
-    } else if (scenario === "meeting_room") {
-      await addLog(`WAY: Found 'OPS-001: Meeting Room Booking'`, 1800);
-      ragResponse = "จองห้องประชุมได้ที่ Mango Office System > Room Booking ดู availability แล้ว book เลยครับ (มีห้อง A-F รองรับ 6-20 คน)";
-      confidence = 0.94;
-      vectorScore = 0.938;
-      docRef = "OPS-001";
-    } else if (scenario === "parking_pass") {
-      await addLog(`WAY: Found 'OPS-002: Parking Pass Request'`, 1800);
-      ragResponse = "ขอบัตรจอดรถแล้วนะครับ (ผมจะเปิด Ticket ให้ Admin ออกบัตรให้ รับได้ใน 1-2 วันทำการครับ)";
-      confidence = 0.85;
-      vectorScore = 0.849;
-      docRef = "OPS-002";
-
-    setSystemStatus(prev => ({ ...prev, confidence }));
-    await addLog(`WAY: Generated Answer (Conf: ${confidence})`, 2200);
-
-          } else {
-      ragResponse = "ขออภัยครับ ข้อมูลนี้ไม่อยู่ใน Knowledge Base ของเรา (Demo Scope: IT, HR, Accounting)";
-      confidence = 0.45;
-      vectorScore = 0.412;
-    }
-    // --- STEP 3: WUT Decision Engine & Business Rules ---
-    await addLog("WUT: Evaluating Decision Rules...", 2500);
-
-    let finalResponse = ragResponse;
-    let finalType = "answer";
-
-    if (confidence < 0.70) {
-        action = "ESCALATE";
-        finalResponse = "ผมไม่แน่ใจในข้อมูลส่วนนี้ เพื่อความถูกต้อง ผมขอส่งเรื่องให้เจ้าหน้าที่ Support ติดต่อกลับนะครับ";
-        finalType = "escalate";
-        setLiveStats(prev => ({ ...prev, escalated: prev.escalated + 1 }));
-        await addLog(`RULE: Low Confidence (<0.7) -> ESCALATE`, 2700);
-    } 
-    else if (dept === "Accounting" && (userMsg.includes("อนุมัติ") || userMsg.includes("approve"))) {
-        action = "CRITICAL_ESCALATE";
-        finalResponse = "⚠️ คำเตือน: ระบบ AI ไม่สามารถดำเนินการเรื่องการเงินได้ เคสนี้ถูกส่งต่อให้แผนกบัญชีเป็น 'High Priority' เรียบร้อยแล้วครับ";
-        finalType = "alert";
-        // Force confidence down visually for safety demonstration
-        setSystemStatus(prev => ({ ...prev, confidence: 0.30 })); 
-        setLiveStats(prev => ({ ...prev, escalated: prev.escalated + 1 }));
-        await addLog(`SAFETY OVERRIDE: Accounting Action -> FORCE ESCALATE`, 2700);
-    }
-    else if (intent === "action_request" && dept === "HR") {
-        action = "CREATE_TICKET";
-        finalResponse = `รับเรื่องขอลาพักร้อนเรียบร้อยครับ\nTicket created: HR-${Math.floor(Math.random()*1000)}\nเจ้าหน้าที่ HR จะตรวจสอบสิทธิ์วันลาและแจ้งผลกลับภายใน 24 ชม. ครับ`;
-        finalType = "ticket";
-        setLiveStats(prev => ({ ...prev, resolved: prev.resolved + 1, costSaved: prev.costSaved + 50 })); 
-        await addLog(`RULE: HR Action -> CREATE TICKET`, 2700);
-    } 
-    else {
-        action = "AUTO_RESOLVE";
-        setLiveStats(prev => ({ ...prev, resolved: prev.resolved + 1, costSaved: prev.costSaved + 50 }));
-        await addLog(`RULE: High Confidence -> AUTO RESOLVE`, 2700);
-    }
-
-    setIsTyping(false);
-    
-    // Construct Dev Mode Payload
-    const debugPayload = {
-       "request_id": `req_${Date.now()}`,
-       "timestamp": new Date().toISOString(),
-       "input": {
-          "text": userMsg,
-          "language": "th"
-       },
-       "classifier": {
-          "department": dept,
-          "urgency": urgency
-       },
-       "rag_engine": {
-          "retrieved_doc": docRef,
-          "vector_similarity": vectorScore,
-          "tokens_used": 150
-       },
-       "decision_engine": {
-          "rule_triggered": action,
-          "safety_lock": action === "CRITICAL_ESCALATE"
-       }
-    };
-
-    setMessages(prev => [...prev, { 
-      role: 'assistant', 
-      content: finalResponse, 
-      type: finalType,
-      debug: debugPayload,
-      meta: { confidence: action === "CRITICAL_ESCALATE" ? 0.30 : confidence, doc: docRef, action }
-    }]);
-    setSystemStatus({ state: 'IDLE', confidence: 0, dept: '-' });
   };
 
   const addLog = (text, delay) => {
