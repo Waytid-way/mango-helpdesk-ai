@@ -12,6 +12,7 @@ python-multipart
 # openai  # Replaced by 
 groq
 fastembed
+qdrant-client
 
 # Utilities
 python-dotenv
