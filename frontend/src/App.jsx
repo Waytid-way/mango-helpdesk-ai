@@ -679,7 +679,7 @@ const scrollToBottom = (ref, containerRef) => {
              </div>
           </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 h-[700px]">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 min-h-[600px] lg:h-[700px]">
             {/* Left: Backend Logs */}
             <div className="lg:col-span-1 bg-[#050911] rounded-2xl border border-slate-800 p-4 flex flex-col font-mono text-xs overflow-hidden shadow-inner">
                <div className="flex items-center justify-between mb-3 border-b border-slate-800 pb-2">
