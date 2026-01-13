@@ -1,107 +1,85 @@
 import os
 import sys
 import tempfile
-import shutil
 import glob
+import shutil
 from pathlib import Path
 from dotenv import load_dotenv
-from git import Repo  # pip install GitPython
+from git import Repo
 from qdrant_client import QdrantClient
 from qdrant_client.models import Distance, VectorParams, PointStruct
-from openai import OpenAI
+from fastembed import TextEmbedding  # <--- NEW: Local Embedding
 
-# 1. Setup Environment
+# Setup
 current_dir = Path(__file__).resolve().parent
 backend_dir = current_dir.parent
 sys.path.append(str(backend_dir))
 load_dotenv(backend_dir / ".env")
 
-# External Repo Config
+# Config
 REPO_URL = "https://github.com/waytid-way/mango-erp-reference-data.git"
 COLLECTION_NAME = "mango_kb"
+VECTOR_SIZE = 384  # <--- NEW: Size for bge-small-en-v1.5
 
 # Clients
-# Note: For Production, these will come from Render's Env Vars
 qdrant_url = os.getenv("QDRANT_URL", "http://localhost:6333")
 qdrant_key = os.getenv("QDRANT_API_KEY", None)
-openai_key = os.getenv("OPENAI_API_KEY")
-
-print(f"🔌 Connecting to Qdrant at: {qdrant_url}")
+print(f"🔌 Connecting to Qdrant: {qdrant_url}")
 qdrant = QdrantClient(url=qdrant_url, api_key=qdrant_key)
-client = OpenAI(api_key=openai_key)
+
+# Initialize Local Embedding Model
+print("🧠 Loading Local Embedding Model (BAAI/bge-small-en-v1.5)...")
+embedding_model = TextEmbedding(model_name="BAAI/bge-small-en-v1.5")
 
 def get_embedding(text):
-    text = text.replace("\n", " ")
-    return client.embeddings.create(input=[text], model="text-embedding-3-small").data[0].embedding
+    # FastEmbed returns a generator, convert to list
+    return list(embedding_model.embed([text]))[0]
 
 def process_file(file_path):
     with open(file_path, 'r', encoding='utf-8') as f:
-        content = f.read()
-    return content
+        return f.read()
 
 def run_ingestion():
-    print("🚀 Starting Advanced Ingestion (Ephemeral Mode)...")
+    print("🚀 Starting Hybrid Ingestion (Local Embed + Cloud Storage)...")
     
-    # Create Collection
+    # 1. Recreate Collection (CRITICAL: Size changed from 1536 to 384)
     qdrant.recreate_collection(
         collection_name=COLLECTION_NAME,
-        vectors_config=VectorParams(size=1536, distance=Distance.COSINE),
+        vectors_config=VectorParams(size=VECTOR_SIZE, distance=Distance.COSINE),
     )
-    
-    # 2. Ephemeral Clone Strategy
-    # Create a temporary directory that auto-deletes when done
+    print(f"✅ Collection reset with vector size {VECTOR_SIZE}")
+
+    # 2. Ephemeral Clone
     with tempfile.TemporaryDirectory() as temp_dir:
-        print(f"⬇️ Cloning {REPO_URL} into temporary storage...")
-        try:
-            Repo.clone_from(REPO_URL, temp_dir)
-            print("✅ Clone successful.")
-        except Exception as e:
-            print(f"❌ Clone failed: {e}")
-            return
-
-        # 3. Walk through files
-        points = []
-        # Find all Markdown files recursively
+        print(f"⬇️ Cloning repo...")
+        Repo.clone_from(REPO_URL, temp_dir)
+        
         files = glob.glob(os.path.join(temp_dir, "**/*.md"), recursive=True)
-        print(f"📦 Found {len(files)} markdown documents.")
-
+        print(f"📦 Found {len(files)} docs.")
+        
+        points = []
         for idx, file_path in enumerate(files):
             try:
                 content = process_file(file_path)
                 filename = os.path.basename(file_path)
-                
-                # Skip empty files or README if needed
                 if not content.strip(): continue
 
-                print(f"   🔹 Processing: {filename}")
-                
-                # Embedding
-                vector = get_embedding(content[:8000]) # Truncate for safety
+                print(f"   🔹 Embedding: {filename}")
+                vector = get_embedding(content[:2000]) # Limit context window
                 
                 points.append(PointStruct(
                     id=idx,
                     vector=vector,
-                    payload={
-                        "title": filename,
-                        "content": content,
-                        "source": "mango-erp-reference-data"
-                    }
+                    payload={"title": filename, "content": content}
                 ))
             except Exception as e:
-                print(f"   ⚠️ Failed to process {file_path}: {e}")
+                print(f"⚠️ Error {filename}: {e}")
 
-        # 4. Upload to Qdrant
+        # 3. Upload
         if points:
-            print(f"⬆️ Uploading {len(points)} vectors to Qdrant...")
+            print(f"⬆️ Uploading {len(points)} vectors...")
             qdrant.upsert(collection_name=COLLECTION_NAME, points=points)
-            print("✅ Ingestion Complete!")
-        else:
-            print("⚠️ No valid data found to ingest.")
-            
-    print("🧹 Temporary directory cleaned up automatically.")
+            print("✅ Ingestion Complete! (No OpenAI Quota used)")
 
 if __name__ == "__main__":
-    if not openai_key:
-        print("❌ Error: OPENAI_API_KEY is missing.")
-    else:
-        run_ingestion()
+    run_ingestion()

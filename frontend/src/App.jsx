@@ -140,7 +140,27 @@ const scrollToBottom = (ref, containerRef) => {
     scrollToBottom(logsEndRef, logsContainerRef);  }, [ragLogs]);
 
   // --- LOGIC: Simulated WUT + WAY Architecture ---
-  const handleSend = async (e) => {
+  const handleSend echo '📊 Phase 1-3 Status Summary:'
+echo ''
+echo '✅ Phase 1: Ingestion script created + Qdrant running'
+echo '   ⚠️  Requires: Real OpenAI API Key in backend/.env'
+echo ''
+echo '✅ Phase 2: RAG Engine updated for real retrieval'
+echo '   File: backend/app/way_rag/__init__.py'
+echo ''
+echo '⚠️  Phase 3: Frontend connection pending'
+echo '   Action needed: Update handleSend() in frontend/src/App.jsx'
+echo '   Replace mock logic with:'
+echo '   - fetch("/api/chat", {method: "POST", ...})'
+echo '   - Add error handling & console.log for debugging'
+echo ''
+echo '📡 To complete Phase 3, user should:'
+echo '1. Open frontend/src/App.jsx'
+echo '2. Find handleSend function (line ~143)'
+echo '3. Replace entire function with real API call code'
+echo '4. Ensure Vite proxy is configured (vite.config.js)'
+echo ''
+echo 'Recommended: Review task instructions for exact code to paste.'= async (e) => {
     e.preventDefault();
     if (!input.trim()) return;
 
