@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { useSmoothScroll } from './hooks/useSmoothScroll';
 import { 
   Database, 
   Search, 
@@ -60,6 +61,9 @@ const useCounter = (end, duration = 2000, start = 0, shouldStart = false) => {
 
 const App = () => {
   const [activeStep, setActiveStep] = useState(0);
+  // Enable smooth scrolling
+  useSmoothScroll();
+
   
   const initialMessage = { 
     role: 'assistant', 
