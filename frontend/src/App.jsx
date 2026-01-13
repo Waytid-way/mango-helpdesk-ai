@@ -1,5 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useSmoothScroll } from './hooks/useSmoothScroll';
+import { motion } from 'framer-motion';
+import { AnimatedSection } from './components/AnimatedSection';
 import { 
   Database, 
   Search, 
