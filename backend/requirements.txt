@@ -5,6 +5,7 @@ pydantic==2.5.3
 openai==1.10.0
 pydantic-settings==2.1.0
 qdrant-client==1.7.0
+sqlmodel==0.0.14
 
 # Testing
 pytest-cov==4.1.0
