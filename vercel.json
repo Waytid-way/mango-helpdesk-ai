@@ -6,7 +6,7 @@
   "rewrites": [
     {
       "source": "/api/:path*",
-      "destination": "https://mango-helpdesk-ai-backend.onrender.com/api/:path*"
+      "destination": "https://mango-helpdesk-backend.onrender.com/api/:path*"
     },
     {
       "source": "/(.*)",
