@@ -1,0 +1,23 @@
+[
+  {
+    "id": "IT-001",
+    "title": "Password Reset Procedure",
+    "department": "IT",
+    "content": "คุณสามารถรีเซ็ตรหัสผ่านอีเมลได้ที่ portal.mango.co.th โดยเลือกเมนู 'Forgot Password' และยืนยันตัวตนผ่าน OTP ที่ส่งไปเบอร์มือถือ",
+    "keywords": ["รหัสผ่าน", "password", "reset", "อีเมล", "email"]
+  },
+  {
+    "id": "HR-050",
+    "title": "Leave Request Policy",
+    "department": "HR",
+    "content": "สำหรับการลาพักร้อน คุณต้องกรอกแบบฟอร์มในระบบ Mango HR และรอหัวหน้าอนุมัติ โดยต้องยื่นขอล่วงหน้าอย่างน้อย 7 วันทำการ",
+    "keywords": ["ลา", "พักร้อน", "vacation", "leave", "วันหยุด"]
+  },
+  {
+    "id": "ACC-101",
+    "title": "Budget Approval Process",
+    "department": "Accounting",
+    "content": "การอนุมัติงบประมาณเกิน 500,000 บาท จำเป็นต้องได้รับการอนุมัติจาก CFO โดยตรงและต้องมีเอกสาร TOR แนบ พร้อมเหตุผลความจำเป็น",
+    "keywords": ["งบประมาณ", "budget", "อนุมัติ", "approve", "เงิน"]
+  }
+]
