@@ -1,4 +1,3 @@
-# Core Framework
 fastapi
 uvicorn
 pydantic>=2.0,<2.10
@@ -10,8 +9,8 @@ python-jose[cryptography]
 python-multipart
 
 # AI & Vector DB
-openai
-qdrant-client
+# openai  # Replaced by 
+groq
 fastembed
 
 # Utilities

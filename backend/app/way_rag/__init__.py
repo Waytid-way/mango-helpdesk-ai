@@ -1,34 +1,24 @@
 import os
 from qdrant_client import QdrantClient
-from openai import OpenAI
-from sqlmodel import Session, select
-from ..database import engine, SystemConfig
-from fastembed import TextEmbedding # <--- NEW
+from groq import Groq
+from fastembed import TextEmbedding
 
 class WAYRAGEngine:
     def __init__(self):
+        # 1. Setup Qdrant (Database)
         qdrant_url = os.getenv("QDRANT_URL", "http://localhost:6333")
         qdrant_key = os.getenv("QDRANT_API_KEY", None)
         self.qdrant = QdrantClient(url=qdrant_url, api_key=qdrant_key)
         self.collection_name = "mango_kb"
         
-        # Load Local Model (Cached)
-        print("🧠 Loading Retrieval Model...")
+        # 2. Setup Local Embedding (Free Brain for Search)
+        print("🧠 Loading Local Embedding Model...")
         self.embed_model = TextEmbedding(model_name="BAAI/bge-small-en-v1.5")
 
-    def _get_config(self):
-        with Session(engine) as session:
-            return session.exec(select(SystemConfig)).first()
-
     def generate_answer(self, query):
-        config = self._get_config()
-        if not config or "CHANGE_ME" in config.openai_api_key:
-            return "⚠️ System Config Error: Check API Key."
-
-        # 1. Local Embedding (Free & Fast)
+        # Step 1: Search relevant info
         try:
             query_vector = list(self.embed_model.embed([query]))[0]
-            
             search_result = self.qdrant.search(
                 collection_name=self.collection_name,
                 query_vector=query_vector,
@@ -36,23 +26,34 @@ class WAYRAGEngine:
             )
             
             if search_result:
-                context = "\n".join([f"- {hit.payload['content'][:500]}..." for hit in search_result])
+                context = "\n".join([f"- {hit.payload['content'][:800]}..." for hit in search_result])
             else:
                 context = "No relevant documents found."
         except Exception as e:
             print(f"Search Error: {e}")
             context = "Error retrieving context."
 
-        # 2. Generation (OpenAI - Only step that costs money)
-        client = OpenAI(api_key=config.openai_api_key)
-        prompt = f"{config.system_prompt}\n\n[Context]\n{context}\n\n[Query]\n{query}"
+        # Step 2: Generate Answer using Groq (Free & Fast)
+        groq_key = os.getenv("GROQ_API_KEY")
+        if not groq_key:
+            return "⚠️ Error: GROQ_API_KEY not found in Render Environment Variables."
 
         try:
-            response = client.chat.completions.create(
-                model=config.model_name,
-                messages=[{"role": "user", "content": prompt}],
-                temperature=config.temperature
+            client = Groq(api_key=groq_key)
+            
+            # Prompt Engineering
+            system_prompt = "You are a helpful AI assistant for Mango Consultant. Answer based on the provided Context only. If unsure, say you don't know."
+            user_prompt = f"[Context]\n{context}\n\n[Question]\n{query}"
+
+            completion = client.chat.completions.create(
+                model="llama3-70b-8192",
+                messages=[
+                    {"role": "system", "content": system_prompt},
+                    {"role": "user", "content": user_prompt}
+                ],
+                temperature=0.3,
+                max_tokens=500,
             )
-            return response.choices[0].message.content
+            return completion.choices[0].message.content
         except Exception as e:
-            return f"AI Error: {str(e)}"
+            return f"AI Error (Groq): {str(e)}"
