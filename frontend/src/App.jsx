@@ -80,6 +80,7 @@ const App = () => {
   
   const messagesEndRef = useRef(null);
   const logsEndRef = useRef(null);
+    const logsContainerRef = useRef(null);
   const heroRef = useRef(null);
   const chatContainerRef = useRef(null);
   const inputRef = useRef(null);
@@ -118,17 +119,19 @@ const App = () => {
     }
   };
 
-  const scrollToBottom = (ref) => {
-    ref.current?.scrollIntoView({ behavior: "smooth" });
+const scrollToBottom = (ref, containerRef) => {
+    // ใช้ scrollTop ของ container แทน scrollIntoView ที่เลื่อน viewport
+    if (containerRef && containerRef.current) {
+      containerRef.current.scrollTop = containerRef.current.scrollHeight;
+    } else if (ref && ref.current) {
+      ref.current.scrollIntoView({ behavior: "smooth", block: "nearest" });
+    }
   };
+  useEffect(() => {
+    scrollToBottom(messagesEndRef, chatContainerRef);  }, [messages]);
 
   useEffect(() => {
-    scrollToBottom(messagesEndRef);
-  }, [messages]);
-
-  useEffect(() => {
-    scrollToBottom(logsEndRef);
-  }, [ragLogs]);
+    scrollToBottom(logsEndRef, logsContainerRef);  }, [ragLogs]);
 
   // --- LOGIC: Simulated WUT + WAY Architecture ---
   const handleSend = async (e) => {
@@ -694,7 +697,7 @@ const App = () => {
                  </div>
                </div>
 
-               <div className="flex-1 overflow-y-auto space-y-2 custom-scrollbar text-slate-300">
+               <div className="flex-1 overflow-y-auto space-y-2 custom-scrollbar text-slate-300" ref={logsContainerRef}>
                  {ragLogs.length === 0 && <div className="text-slate-600 italic text-center mt-10">Waiting for requests...</div>}
                  {ragLogs.map((log, i) => (
                    <div key={i} className="flex gap-2 border-l-2 border-slate-700 pl-2 py-1 animate-fade-in-up delay-100">
