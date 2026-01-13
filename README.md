@@ -19,12 +19,12 @@
 
 Mango Helpdesk AI เป็นระบบ AI Chatbot ที่ออกแบบมาเพื่อแก้ปัญหา **4 ชั่วโมงเวลาตอบกลับ** และ **60% คำถามซ้ำซาก** ที่เกิดขึ้นใน Support Team ของ Mango Consultant (ลูกค้า 600-800 บริษัท)
 
-### 🎯 Problem We Solve
-- ⏰ **Long Response Time:** 4 hours average → Target: <1 minute
-- 🔄 **Repetitive Queries:** 60% are FAQ (Password, VPN, Leave) → Automate
-- 💰 **High Cost:** 200K THB/month operation cost → Reduce by 60%
+### Problem We Solve
+- **Long Response Time:** 4 hours average → Target: <1 minute
+- **Repetitive Queries:** 60% are FAQ (Password, VPN, Leave) → Automate
+- **High Cost:** 200K THB/month operation cost → Reduce by 60%
 
-### 💡 Our Solution
+### Our Solution
 **WUT + WAY Architecture** - A safety-first RAG system with:
 - **WUT Orchestrator:** Smart classifier + business rule engine
 - **WAY RAG Engine:** Thai language vector search + GPT-3.5
@@ -32,7 +32,7 @@ Mango Helpdesk AI เป็นระบบ AI Chatbot ที่ออกแบ�
 
 ---
 
-## 🏗️ Architecture
+## Architecture
 
 ```
 ┌─────────────┐
@@ -63,7 +63,7 @@ Mango Helpdesk AI เป็นระบบ AI Chatbot ที่ออกแบ�
 └──────────────────────────────┘
 ```
 
-### 🔐 Safety-First Design
+### Safety-First Design
 | Action Type | Confidence | Decision |
 |------------|-----------|----------|
 | General Query | >70% | AUTO_RESOLVE |
@@ -73,7 +73,7 @@ Mango Helpdesk AI เป็นระบบ AI Chatbot ที่ออกแบ�
 
 ---
 
-## 🚀 Installation
+## Installation
 
 ### Prerequisites
 - Node.js 18+ (for Frontend)
@@ -95,7 +95,7 @@ npm install
 npm run dev
 ```
 
-Visit `http://localhost:3000` to see the demo! 🎉
+Visit `http://localhost:3000` to see the demo!
 
 ### Full Stack Setup (Frontend + Backend)
 
@@ -132,29 +132,29 @@ Access:
 
 ---
 
-## ✨ Key Features
+## Key Features
 
-### 🌐 **Thai Language Support**
+### **Thai Language Support**
 - Native Thai language understanding
 - Context-aware responses
 - Professional communication style
 
-### 🧠 **Intelligent Classification**
+### **Intelligent Classification**
 - Auto-detect department (IT, HR, Accounting)
 - Intent recognition (Question, Action Request)
 - Urgency level assessment
 
-### 🔍 **RAG-Powered Answers**
+### **RAG-Powered Answers**
 - Vector similarity search (Qdrant)
 - Knowledge base with 100+ documents
 - Confidence scoring for reliability
 
-### 🛡️ **Safety Mechanisms**
+### **Safety Mechanisms**
 - **Hard Block:** Financial approvals require human
 - **Soft Escalation:** Low confidence queries
 - **Audit Trail:** Full logging for compliance
 
-### 📊 **Real-time Analytics**
+### **Real-time Analytics**
 - Live request counter
 - Auto-resolve rate tracking
 - Cost savings calculator
@@ -162,26 +162,26 @@ Access:
 
 ---
 
-## 🎬 Live Demo
+## Live Demo
 
 The demo includes **3 pre-configured scenarios**:
 
-1. **🟢 Auto-Resolve (IT):** "รหัสผ่านอีเมลหาย"
+1. **Auto-Resolve (IT):** "วิธีทำเปลี่ยนหมาย"
    - Confidence: 92%
    - Action: AUTO_RESOLVE
    - Response: <1 second
 
-2. **🟡 Ticket Creation (HR):** "ขอลาพักร้อน 5 วัน"
+2. **Ticket Creation (HR):** "ขอลาพักร้อน 5 วัน"
    - Confidence: 88%
    - Action: CREATE_TICKET
    - Escalates to HR with tracking number
 
-3. **🔴 Safety Stop (Accounting):** "อนุมัติงบ 1 ล้านบาท"
+3. **Safety Stop (Accounting):** "อนุมัติคืน 1 ล้านบาท"
    - Confidence: Forced to 30%
    - Action: CRITICAL_ESCALATE
    - Hard block with security warning
 
-### 🎮 How to Use Demo
+### How to Use Demo
 1. Click scenario chips or type custom query
 2. Watch **System Logs** (left panel) for real-time processing
 3. Toggle **Dev Mode** (top-right) to see JSON payloads
@@ -189,7 +189,7 @@ The demo includes **3 pre-configured scenarios**:
 
 ---
 
-## 📈 Projected Business Impact
+## Projected Business Impact
 
 | Metric | Before | After | Improvement |
 |--------|--------|-------|-------------|
@@ -200,7 +200,7 @@ The demo includes **3 pre-configured scenarios**:
 
 ---
 
-## 🛠️ Tech Stack
+## Tech Stack
 
 ### Frontend
 - **Framework:** React 18 + Vite
@@ -221,7 +221,7 @@ The demo includes **3 pre-configured scenarios**:
 
 ---
 
-## 📂 Project Structure
+## Project Structure
 
 ```
 mango-helpdesk-ai/
@@ -252,21 +252,21 @@ mango-helpdesk-ai/
 
 ---
 
-## 🎯 Development Roadmap
+## Development Roadmap
 
-### ✅ Phase 1: POC (Current)
+### Phase 1: POC (Current)
 - [x] Frontend presentation layer
 - [x] Simulated WUT/WAY logic
 - [x] 3-scenario demo
 - [x] Developer mode
 
-### 🚧 Phase 2: Backend Integration (Next)
+### Phase 2: Backend Integration (Next)
 - [ ] Real FastAPI endpoints
 - [ ] Qdrant vector search
 - [ ] OpenAI GPT-3.5 integration
 - [ ] User authentication
 
-### 🔮 Phase 3: Production Ready
+### Phase 3: Production Ready
 - [ ] Load testing
 - [ ] Multi-language support (EN)
 - [ ] Admin dashboard
@@ -274,7 +274,7 @@ mango-helpdesk-ai/
 
 ---
 
-## 🤝 Interview Highlights
+## Interview Highlights
 
 ### Why This Project Stands Out
 
@@ -310,7 +310,7 @@ This project is created for demonstration purposes as part of a job interview pr
 
 ---
 
-## 🙏 Acknowledgments
+## Acknowledgements
 
 - Mango Consultant for the opportunity
 - OpenAI for GPT-3.5 API
@@ -321,7 +321,7 @@ This project is created for demonstration purposes as part of a job interview pr
 
 <div align="center">
 
-**Built with ❤️ for Mango Consultant**
+**Built for Mango Consultant**
 
 *Revolutionizing support, one query at a time*
 
