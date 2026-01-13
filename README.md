@@ -1,4 +1,4 @@
-# 🤖 Mango Helpdesk AI
+# Mango Helpdesk AI
 
 <div align="center">
 
@@ -6,18 +6,18 @@
 ![Architecture](https://img.shields.io/badge/Architecture-WUT%20%2B%20WAY-blue)
 ![Interview](https://img.shields.io/badge/Interview-Jan%2015%2C%202026-orange)
 
-**AI-Powered Helpdesk System for Mango Consultant**  
+**Helpdesk System for Mango Consultant**  
 *Revolutionizing support with Thai language RAG and safety-first business rules*
 
-[Live Demo](#-live-demo) • [Architecture](#-architecture) • [Installation](#-installation) • [Features](#-key-features)
+[Live Demo](#live-demo) • [Architecture](#architecture) • [Installation](#installation) • [Features](#key-features)
 
 </div>
 
 ---
 
-## 📋 Executive Summary
+## Executive Summary
 
-Mango Helpdesk AI เป็นระบบ AI Chatbot ที่ออกแบบมาเพื่อแก้ปัญหา **4 ชั่วโมงเวลาตอบกลับ** และ **60% คำถามซ้ำซาก** ที่เกิดขึ้นใน Support Team ของ Mango Consultant (ลูกค้า 600-800 บริษัท)
+Mango Helpdesk AI เป็นระบบ Chatbot ที่ออกแบบมาเพื่อแก้ปัญหา **4 ชั่วโมงเวลาตอบกลับ** และ **60% คำถามซ้ำซาก** ที่เกิดขึ้นใน Support Team ของ Mango Consultant (ลูกค้า 600-800 บริษัท)
 
 ### Problem We Solve
 - **Long Response Time:** 4 hours average → Target: <1 minute
@@ -134,27 +134,27 @@ Access:
 
 ## Key Features
 
-### **Thai Language Support**
+### Thai Language Support
 - Native Thai language understanding
 - Context-aware responses
 - Professional communication style
 
-### **Intelligent Classification**
+### Intelligent Classification
 - Auto-detect department (IT, HR, Accounting)
 - Intent recognition (Question, Action Request)
 - Urgency level assessment
 
-### **RAG-Powered Answers**
+### RAG-Powered Answers
 - Vector similarity search (Qdrant)
 - Knowledge base with 100+ documents
 - Confidence scoring for reliability
 
-### **Safety Mechanisms**
+### Safety Mechanisms
 - **Hard Block:** Financial approvals require human
 - **Soft Escalation:** Low confidence queries
 - **Audit Trail:** Full logging for compliance
 
-### **Real-time Analytics**
+### Real-time Analytics
 - Live request counter
 - Auto-resolve rate tracking
 - Cost savings calculator
@@ -278,33 +278,33 @@ mango-helpdesk-ai/
 
 ### Why This Project Stands Out
 
-1. **🎯 Real Business Impact**
+1. **Real Business Impact**
    - Solves 60% bottleneck with measurable ROI
    - Direct cost savings: 120K THB/month
 
-2. **🛡️ Safety-First Architecture**
+2. **Safety-First Architecture**
    - Risk mitigation for financial actions
    - Compliance-ready with audit trails
 
-3. **🏗️ Scalable Design**
+3. **Scalable Design**
    - Clean separation (WUT/WAY)
    - Microservices-ready
    - Easy to add new departments
 
-4. **🇹🇭 Thai Language Excellence**
+4. **Thai Language Excellence**
    - Native understanding (not translation)
    - Cultural context awareness
 
 ---
 
-## 👥 Team
+## Team
 
 **WUT & WAY Team**  
 Prepared for Mango Consultant Interview - January 15, 2026
 
 ---
 
-## 📄 License
+## License
 
 This project is created for demonstration purposes as part of a job interview process.
 
