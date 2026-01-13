@@ -233,11 +233,6 @@ const App = () => {
       confidence = 0.85; 
       vectorScore = 0.842;
       docRef = "ACC-101";
-    } else {
-      ragResponse = "ขออภัยครับ ข้อมูลนี้ไม่อยู่ใน Knowledge Base ของเรา (Demo Scope: IT, HR, Accounting)";
-      confidence = 0.45;
-      vectorScore = 0.412;
-    }
         } else if (scenario === "vpn_issue") {
       await addLog(`WAY: Found 'IT-002: VPN Connection Guide'`, 1800);
       ragResponse = "หาก VPN เชื่อมไม่ได้ ลอง 1) Restart Router 2) ตรวจสอบ username/password 3) Clear VPN cache หรือติดต่อ IT Support: ext 1234 ครับ";
@@ -302,6 +297,11 @@ const App = () => {
     setSystemStatus(prev => ({ ...prev, confidence }));
     await addLog(`WAY: Generated Answer (Conf: ${confidence})`, 2200);
 
+          } else {
+      ragResponse = "ขออภัยครับ ข้อมูลนี้ไม่อยู่ใน Knowledge Base ของเรา (Demo Scope: IT, HR, Accounting)";
+      confidence = 0.45;
+      vectorScore = 0.412;
+    }
     // --- STEP 3: WUT Decision Engine & Business Rules ---
     await addLog("WUT: Evaluating Decision Rules...", 2500);
 
