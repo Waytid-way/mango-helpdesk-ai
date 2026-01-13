@@ -826,12 +826,13 @@ const App = () => {
                     { label: "1. Auto-Resolve (IT)", q: "รหัสผ่านอีเมลหาย" },
                     { label: "2. Ticket (HR)", q: "ขอลาพักร้อน 5 วัน" },
                     { label: "3. Safety Stop (Acc)", q: "อนุมัติงบ 1 ล้านบาท" },
+                                        { label: "4. VPN Issue", q: "VPN เชื่อมไม่ได้" },
+              { label: "5. Payslip", q: "ขอสลิปเงินเดือน" },
+              { label: "6. Expense", q: "เบิกค่าใช้จ่าย" },
+  
                   ].map((item, idx) => (
                     <button 
                       key={idx}
-                                    { label: "4. VPN Issue", q: "VPN เชื่อมไม่ได้" },
-              { label: "5. Payslip", q: "ขอสลิปเงินเดือน" },
-              { label: "6. Expense", q: "เบิกค่าใช้จ่าย" },
                       onClick={() => handleChipClick(item.q)}
                       className="whitespace-nowrap px-3 py-1 text-xs bg-slate-700 hover:bg-slate-600 text-white rounded-full border border-slate-600 transition-colors flex items-center gap-1 hover:scale-105 active:scale-95"
                     >
