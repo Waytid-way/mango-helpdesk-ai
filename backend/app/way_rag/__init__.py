@@ -1,28 +1,36 @@
-"""
-WAY RAG Engine Module
-Handles vector search and LLM answer generation
-"""
+import os
+from qdrant_client import QdrantClient
+from openai import OpenAI
+from sqlmodel import Session, select
+from ..database import engine, SystemConfig
 
 class WAYRAGEngine:
-    """RAG Engine for knowledge retrieval and answer generation"""
-    
     def __init__(self):
-        # TODO: Initialize Qdrant client and OpenAI client
-        pass
-    
-    def search(self, query: str, top_k: int = 3):
-        """Search knowledge base using vector similarity"""
-        # TODO: Implement Qdrant vector search
-        return {
-            "doc_id": "IT-001",
-            "score": 0.92,
-            "content": "Mock document content"
-        }
-    
-    def generate_answer(self, query: str, context: str):
-        """Generate answer using LLM"""
-        # TODO: Implement OpenAI GPT-3.5 answer generation
-        return {
-            "answer": "Mock answer from LLM",
-            "confidence": 0.85
-        }
+        # Default to localhost
+        qdrant_url = os.getenv("QDRANT_URL", "http://localhost:6333")
+        self.qdrant = QdrantClient(url=qdrant_url)
+        self.collection_name = "mango_kb"
+
+    def _get_config(self):
+        with Session(engine) as session:
+            return session.exec(select(SystemConfig)).first()
+
+    def generate_answer(self, query):
+        config = self._get_config()
+        if not config.openai_api_key or "CHANGE_ME" in config.openai_api_key:
+            return "⚠️ System not configured. Please login to Admin Panel to set API Key."
+
+        client = OpenAI(api_key=config.openai_api_key)
+        # Mock retrieval for now
+        context = "No relevant documents found yet. (Ingestion needed)"
+        full_prompt = f"{config.system_prompt}\n\n[Context]\n{context}\n\n[User Query]\n{query}"
+
+        try:
+            response = client.chat.completions.create(
+                model=config.model_name,
+                messages=[{"role": "user", "content": full_prompt}],
+                temperature=config.temperature
+            )
+            return response.choices[0].message.content
+        except Exception as e:
+            return f"AI Error: {str(e)}"
