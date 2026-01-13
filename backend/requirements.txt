@@ -1,18 +1,22 @@
-fastapi==0.109.0
-uvicorn[standard]==0.27.0
-python-dotenv==1.0.0
-pydantic==2.5.3
-openai==1.10.0
-pydantic-settings==2.1.0
-qdrant-client==1.7.0
-sqlmodel==0.0.14
+# Core Framework
+fastapi
+uvicorn
+pydantic
+sqlmodel
 
-# Testing
-pytest-cov==4.1.0
-pytest-asyncio==0.23.3
-httpx==0.26.0
+# Database & Auth
+passlib[bcrypt]
+python-jose[cryptography]
+python-multipart
 
+# AI & Vector DB
+openai
+qdrant-client
+fastembed
 
+# Utilities
+python-dotenv
 GitPython
-gunicorn
-fastembed==0.3.1
+requests
+httpx
+loguru
