@@ -1,6 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
+from typing import List
 from contextlib import asynccontextmanager
 from .database import init_db
 from .way_rag import WAYRAGEngine
@@ -27,11 +28,23 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+class ChatMessage(BaseModel):
+    role: str  # "user" or "assistant"
+    content: str
+
 class ChatRequest(BaseModel):
-    message: str
+    messages: List[ChatMessage]
 
 @app.post("/api/chat")
 async def chat(request: ChatRequest):
-    # Use the pre-loaded brain
-    response = rag_engine.generate_answer(request.message)
+    # Guard clause for empty messages
+    if not request.messages:
+        return {"response": "Please provide a message."}
+    
+    # Token safety: limit to last 6 messages
+    messages_list = [{"role": msg.role, "content": msg.content} for msg in request.messages]
+    chat_history = messages_list[-6:] if len(messages_list) > 6 else messages_list
+    
+    # Use the pre-loaded brain with conversation context
+    response = rag_engine.generate_answer(chat_history)
     return {"response": response}

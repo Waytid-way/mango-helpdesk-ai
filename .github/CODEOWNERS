@@ -1,0 +1,30 @@
+# GitHub CODEOWNERS
+# Auto-assign reviewers for specific files/directories
+
+# Default owner for everything
+* @Waytid-way
+
+# Frontend
+/frontend/** @Waytid-way
+*.jsx @Waytid-way
+*.css @Waytid-way
+
+# Backend
+/backend/** @Waytid-way
+*.py @Waytid-way
+
+# Documentation
+/docs/** @Waytid-way
+*.md @Waytid-way
+
+# Configuration files
+*.yml @Waytid-way
+*.yaml @Waytid-way
+*.json @Waytid-way
+Dockerfile @Waytid-way
+docker-compose.yml @Waytid-way
+
+# CI/CD
+/.github/** @Waytid-way
+/render.yaml @Waytid-way
+/vercel.json @Waytid-way

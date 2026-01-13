@@ -1,0 +1,39 @@
+# Commit Message Template
+# Use: git commit (without -m) to open this template
+
+# === FORMAT ===
+# <type>(<scope>): <subject>
+#
+# <body>
+#
+# <footer>
+#
+# === TYPES ===
+# feat:     New feature
+# fix:      Bug fix
+# refactor: Code refactoring (no behavior change)
+# docs:     Documentation changes
+# style:    Code formatting (no logic change)
+# test:     Add/update tests
+# chore:    Maintenance (deps, build, config)
+# perf:     Performance improvements
+# ci:       CI/CD changes
+#
+# === SCOPES (optional) ===
+# backend, frontend, api, docs, deploy, db, ui
+#
+# === RULES ===
+# 1. Subject: Max 50 chars, imperative mood ("Add" not "Added")
+# 2. Body: Wrap at 72 chars, explain WHAT and WHY
+# 3. Footer: Reference issues (e.g., "Closes #123")
+#
+# === EXAMPLES ===
+# feat(backend): add Groq API integration for LLM inference
+#
+# - Switch from OpenAI to Groq for cost savings
+# - Use llama-3.3-70b-versatile model
+# - Add error handling for API failures
+#
+# Closes #45
+# ---------------------------
+# Remember to delete these comments before committing!

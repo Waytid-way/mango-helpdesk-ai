@@ -160,6 +160,12 @@ Access:
 - Cost savings calculator
 - Developer mode (JSON payload inspection)
 
+### Conversational Context (NEW)
+- **Chat History Sidebar:** Persistent storage using localStorage
+- **Context-Aware RAG:** AI remembers previous conversation turns
+- **Session Management:** Create, switch, and delete chat sessions
+- **Token Safety:** Limits context to last 6 messages
+
 ---
 
 ## Live Demo
@@ -210,9 +216,10 @@ The demo includes **3 pre-configured scenarios**:
 
 ### Backend
 - **Framework:** FastAPI
-- **Vector DB:** Qdrant
-- **LLM:** OpenAI GPT-3.5 Turbo
-- **Auth:** (Planned) JWT
+- **Vector DB:** Qdrant Cloud
+- **LLM:** Groq (Llama 3.3 70B) - Free & Fast
+- **Embedding:** FastEmbed (BAAI/bge-small-en)
+- **Hosting:** Render.com
 
 ### Infrastructure
 - **Deployment:** Docker + Docker Compose
@@ -254,19 +261,21 @@ mango-helpdesk-ai/
 
 ## Development Roadmap
 
-### Phase 1: POC (Current)
+### Phase 1: POC (Completed)
 - [x] Frontend presentation layer
 - [x] Simulated WUT/WAY logic
 - [x] 3-scenario demo
 - [x] Developer mode
 
-### Phase 2: Backend Integration (Next)
-- [ ] Real FastAPI endpoints
-- [ ] Qdrant vector search
-- [ ] OpenAI GPT-3.5 integration
-- [ ] User authentication
+### Phase 2: Backend Integration (Completed)
+- [x] Real FastAPI endpoints
+- [x] Qdrant vector search
+- [x] Groq LLM integration
+- [x] Chat history & context persistence
+- [x] Session management sidebar
 
-### Phase 3: Production Ready
+### Phase 3: Production Ready (Next)
+- [ ] User authentication
 - [ ] Load testing
 - [ ] Multi-language support (EN)
 - [ ] Admin dashboard

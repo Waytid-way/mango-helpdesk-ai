@@ -1,0 +1,73 @@
+name: Pull Request
+description: Submit a pull request to contribute to this project
+title: "[PR] "
+labels: ["pull-request"]
+
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ## Pull Request Template
+        ขอบคุณที่ contribute! กรุณากรอกข้อมูลด้านล่าง
+
+  - type: dropdown
+    id: pr-type
+    attributes:
+      label: Type of Change
+      description: What type of change does this PR introduce?
+      options:
+        - 🚀 Feature (new functionality)
+        - 🐛 Bug Fix
+        - ♻️ Refactor (code improvement)
+        - 📝 Documentation
+        - 🎨 Style (formatting, naming)
+        - ✅ Test
+        - 🔧 Chore (dependencies, config)
+    validations:
+      required: true
+
+  - type: textarea
+    id: description
+    attributes:
+      label: Description
+      description: อธิบายการเปลี่ยนแปลงที่ทำ
+      placeholder: |
+        - เพิ่ม feature X
+        - แก้ไข bug Y
+        - Refactor component Z
+    validations:
+      required: true
+
+  - type: textarea
+    id: related-issues
+    attributes:
+      label: Related Issues
+      description: Link ไปยัง issues ที่เกี่ยวข้อง
+      placeholder: |
+        Closes #123
+        Fixes #456
+        Refs #789
+
+  - type: checkboxes
+    id: testing
+    attributes:
+      label: Testing Checklist
+      description: ตรวจสอบว่าทำครบหรือยัง
+      options:
+        - label: ✅ Code ทำงานได้ใน local
+        - label: ✅ Tests ผ่านทั้งหมด (ถ้ามี)
+        - label: ✅ ไม่มี console.log หรือ debug statements
+        - label: ✅ Documentation updated (ถ้าจำเป็น)
+        - label: ✅ Commit messages ตาม convention
+
+  - type: textarea
+    id: screenshots
+    attributes:
+      label: Screenshots / GIFs
+      description: ถ้ามีการเปลี่ยนแปลง UI ให้แนบ screenshots
+
+  - type: textarea
+    id: additional
+    attributes:
+      label: Additional Notes
+      description: ข้อมูลเพิ่มเติมสำหรับ reviewers

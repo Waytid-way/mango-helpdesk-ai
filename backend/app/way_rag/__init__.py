@@ -15,8 +15,32 @@ class WAYRAGEngine:
         print("🧠 Loading Local Embedding Model...")
         self.embed_model = TextEmbedding(model_name="BAAI/bge-small-en-v1.5")
 
-    def generate_answer(self, query):
-        # Step 1: Search relevant info
+    def generate_answer(self, messages: list):
+        """
+        Generate answer with conversation context.
+        
+        Args:
+            messages: List of message dicts [{"role": "user"|"assistant", "content": "..."}]
+        """
+        # Guard clause for empty messages
+        if not messages:
+            return "Please provide a message to get started."
+        
+        # Extract last user message for vector search
+        user_messages = [m for m in messages if m.get("role") == "user"]
+        if not user_messages:
+            return "Please provide a user message."
+        
+        query = user_messages[-1]["content"] if user_messages else ""
+        
+        # Format chat history for context (exclude last message, it's the current query)
+        chat_history_lines = []
+        for msg in messages[:-1]:  # Exclude last message
+            role_label = "User" if msg.get("role") == "user" else "AI"
+            chat_history_lines.append(f"{role_label}: {msg.get('content', '')}")
+        chat_history = "\n".join(chat_history_lines) if chat_history_lines else "No previous conversation."
+
+        # Step 1: Search relevant info from knowledge base
         try:
             query_vector = list(self.embed_model.embed([query]))[0]
             search_result = self.qdrant.search(
@@ -41,9 +65,24 @@ class WAYRAGEngine:
         try:
             client = Groq(api_key=groq_key)
             
-            # Prompt Engineering
-            system_prompt = "You are a helpful AI assistant for Mango Consultant. Answer based on the provided Context only. If unsure, say you don't know."
-            user_prompt = f"[Context]\n{context}\n\n[Question]\n{query}"
+            # Enhanced Prompt Engineering with Chat History
+            system_prompt = f"""You are a helpful AI assistant for Mango Consultant.
+Use the Chat History and Retrieved Context to provide accurate, contextual answers.
+
+=== CHAT HISTORY ===
+{chat_history}
+
+=== RETRIEVED CONTEXT ===
+{context}
+
+=== INSTRUCTIONS ===
+1. Use chat history to maintain conversation continuity
+2. If user refers to something from earlier in the conversation, use that context
+3. Prioritize retrieved context for factual answers
+4. If you don't know something, say so honestly
+5. Respond in the same language as the user's query"""
+
+            user_prompt = query
 
             completion = client.chat.completions.create(
                 model="llama-3.3-70b-versatile",
