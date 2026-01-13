@@ -158,6 +158,41 @@ const App = () => {
       scenario = "password_reset";
     } else if (userMsg.includes("ลา") || userMsg.includes("vacation") || userMsg.includes("leave")) {
       dept = "HR";
+          } else if (userMsg.includes("vpn") || userMsg.includes("เชื่อมต่อ") || userMsg.includes("remote work")) {
+      dept = "IT";
+      scenario = "vpn_issue";
+    } else if (userMsg.includes("อีเมลเต็ม") || userMsg.includes("storage") || userMsg.includes("mailbox")) {
+      dept = "IT";
+      scenario = "email_storage";
+    } else if (userMsg.includes("ติดตั้ง") || userMsg.includes("install") || userMsg.includes("software") || userMsg.includes("โปรแกรม")) {
+      dept = "IT";
+      intent = "action_request";
+      scenario = "software_install";
+          } else if (userMsg.includes("สลิปเงินเดือน") || userMsg.includes("payslip") || userMsg.includes("เงินเดือน")) {
+      dept = "HR";
+      scenario = "payslip_request";
+    } else if (userMsg.includes("ขอหนังสือรับรอง") || userMsg.includes("certificate") || userMsg.includes("employment letter")) {
+      dept = "HR";
+      intent = "action_request";
+      scenario = "work_certificate";
+    } else if (userMsg.includes("ทดลองงาน") || userMsg.includes("probation") || userMsg.includes("ผ่านโปร")) {
+      dept = "HR";
+      scenario = "probation_question";
+          } else if (userMsg.includes("เบิกค่าใช้จ่าย") || userMsg.includes("expense") || userMsg.includes("claim")) {
+      dept = "Accounting";
+      scenario = "expense_claim";
+    } else if (userMsg.includes("สถานะชำระเงิน") || userMsg.includes("invoice") || userMsg.includes("payment") || userMsg.includes("จ่ายเงิน")) {
+      dept = "Accounting";
+      intent = "action_request";
+      urgency = "high";
+      scenario = "invoice_payment";
+    } else if (userMsg.includes("จองห้องประชุม") || userMsg.includes("meeting room") || userMsg.includes("book room")) {
+      dept = "General";
+      scenario = "meeting_room";
+    } else if (userMsg.includes("ที่จอดรถ") || userMsg.includes("parking") || userMsg.includes("บัตรจอด")) {
+      dept = "General";
+      intent = "action_request";
+      scenario = "parking_pass";
       intent = "action_request";
       scenario = "leave_request";
     } else if (userMsg.includes("งบ") || userMsg.includes("อนุมัติ") || userMsg.includes("approve") || userMsg.includes("เงิน")) {
@@ -203,6 +238,66 @@ const App = () => {
       confidence = 0.45;
       vectorScore = 0.412;
     }
+        } else if (scenario === "vpn_issue") {
+      await addLog(`WAY: Found 'IT-002: VPN Connection Guide'`, 1800);
+      ragResponse = "หาก VPN เชื่อมไม่ได้ ลอง 1) Restart Router 2) ตรวจสอบ username/password 3) Clear VPN cache หรือติดต่อ IT Support: ext 1234 ครับ";
+      confidence = 0.89;
+      vectorScore = 0.885;
+      docRef = "IT-002";
+    } else if (scenario === "email_storage") {
+      await addLog(`WAY: Found 'IT-003: Email Storage Management'`, 1800);
+      ragResponse = "อีเมลเต็มแก้ไขได้โดย 1) ลบอีเมลเก่า 2) Archive ไป PST file 3) ขอเพิ่ม quota ได้ที่ IT Helpdesk ครับ (max 10GB/user)";
+      confidence = 0.91;
+      vectorScore = 0.908;
+      docRef = "IT-003";
+    } else if (scenario === "software_install") {
+      await addLog(`WAY: Found 'IT-004: Software Installation Policy'`, 1800);
+      ragResponse = "การติดตั้งโปรแกรมต้องขออนุมัติจาก IT Manager ก่อนครับ (ผมจะเปิด Ticket ให้ IT ดำเนินการต่อนะครับ)";
+      confidence = 0.86;
+      vectorScore = 0.858;
+      docRef = "IT-004";
+        } else if (scenario === "payslip_request") {
+      await addLog(`WAY: Found 'HR-051: Payslip Access'`, 1800);
+      ragResponse = "สลิปเงินเดือน download ได้ที่ Mango HR Portal > Payroll > Payslip History ครับ (ถ้าเข้าไม่ได้ ติดต่อ HR ext 2001)";
+      confidence = 0.93;
+      vectorScore = 0.925;
+      docRef = "HR-051";
+    } else if (scenario === "work_certificate") {
+      await addLog(`WAY: Found 'HR-052: Certificate Request'`, 1800);
+      ragResponse = "ขอหนังสือรับรองแล้วนะครับ (ผมจะเปิด Ticket ให้ HR ออกเอกสารให้ ใช้เวลา 3-5 วันทำการครับ)";
+      confidence = 0.87;
+      vectorScore = 0.871;
+      docRef = "HR-052";
+    } else if (scenario === "probation_question") {
+      await addLog(`WAY: Found 'HR-053: Probation Policy'`, 1800);
+      ragResponse = "บริษัทมีระยะทดลองงาน 120 วัน ประเมินผลโดย Manager ทุก 60/90/120 วัน ผ่านโปรจะได้สิทธิ์เต็มที่ครับ";
+      confidence = 0.90;
+      vectorScore = 0.898;
+      docRef = "HR-053";
+        } else if (scenario === "expense_claim") {
+      await addLog(`WAY: Found 'ACC-102: Expense Claim Process'`, 1800);
+      ragResponse = "เบิกค่าใช้จ่ายได้ที่ระบบ Expense Cloud > Submit Claim + แนบใบเสร็จ รอ Manager approve แล้วจ่ายใน 7 วันทำการครับ";
+      confidence = 0.88;
+      vectorScore = 0.879;
+      docRef = "ACC-102";
+    } else if (scenario === "invoice_payment") {
+      await addLog(`WAY: Found 'ACC-103: Invoice Payment Inquiry'`, 1800);
+      ragResponse = "สถานะการชำระเงิน Invoice ต้องตรวจสอบโดย Accounting โดยตรงครับ (ข้อมูลทางการเงินต้องได้รับการตรวจสอบจากมนุษย์)";
+      confidence = 0.82;
+      vectorScore = 0.816;
+      docRef = "ACC-103";
+    } else if (scenario === "meeting_room") {
+      await addLog(`WAY: Found 'OPS-001: Meeting Room Booking'`, 1800);
+      ragResponse = "จองห้องประชุมได้ที่ Mango Office System > Room Booking ดู availability แล้ว book เลยครับ (มีห้อง A-F รองรับ 6-20 คน)";
+      confidence = 0.94;
+      vectorScore = 0.938;
+      docRef = "OPS-001";
+    } else if (scenario === "parking_pass") {
+      await addLog(`WAY: Found 'OPS-002: Parking Pass Request'`, 1800);
+      ragResponse = "ขอบัตรจอดรถแล้วนะครับ (ผมจะเปิด Ticket ให้ Admin ออกบัตรให้ รับได้ใน 1-2 วันทำการครับ)";
+      confidence = 0.85;
+      vectorScore = 0.849;
+      docRef = "OPS-002";
 
     setSystemStatus(prev => ({ ...prev, confidence }));
     await addLog(`WAY: Generated Answer (Conf: ${confidence})`, 2200);
@@ -734,6 +829,9 @@ const App = () => {
                   ].map((item, idx) => (
                     <button 
                       key={idx}
+                                    { label: "4. VPN Issue", q: "VPN เชื่อมไม่ได้" },
+              { label: "5. Payslip", q: "ขอสลิปเงินเดือน" },
+              { label: "6. Expense", q: "เบิกค่าใช้จ่าย" },
                       onClick={() => handleChipClick(item.q)}
                       className="whitespace-nowrap px-3 py-1 text-xs bg-slate-700 hover:bg-slate-600 text-white rounded-full border border-slate-600 transition-colors flex items-center gap-1 hover:scale-105 active:scale-95"
                     >
