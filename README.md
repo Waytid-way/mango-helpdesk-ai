@@ -27,7 +27,7 @@ Mango Helpdesk AI เป็นระบบ Chatbot ที่ออกแบบ�
 ### Our Solution
 **WUT + WAY Architecture** - A safety-first RAG system with:
 - **WUT Orchestrator:** Smart classifier + business rule engine
-- **WAY RAG Engine:** Thai language vector search + GPT-3.5
+- **WAY RAG Engine:** Thai language vector search + Groq LLM (Llama 3.3 70B)
 - **Human-in-the-loop:** Critical actions (Finance/HR) require approval
 
 ---
@@ -58,7 +58,7 @@ Mango Helpdesk AI เป็นระบบ Chatbot ที่ออกแบบ�
 │  │  Vector Search (Qdrant) │ │ → Find relevant docs
 │  └─────────────────────────┘ │
 │  ┌─────────────────────────┐ │
-│  │  LLM (GPT-3.5)          │ │ → Generate answer
+│  │  LLM (Groq)             │ │ → Generate answer
 │  └─────────────────────────┘ │
 └──────────────────────────────┘
 ```
@@ -119,7 +119,7 @@ pip install -r requirements.txt
 
 # Setup environment variables
 cp .env.example .env
-# Edit .env and add your OPENAI_API_KEY
+# Edit .env and add your GROQ_API_KEY
 
 # Run server
 python -m uvicorn app.main:app --reload --port 8000
@@ -154,11 +154,10 @@ Access:
 - **Soft Escalation:** Low confidence queries
 - **Audit Trail:** Full logging for compliance
 
-### Real-time Analytics
-- Live request counter
-- Auto-resolve rate tracking
-- Cost savings calculator
-- Developer mode (JSON payload inspection)
+### Developer Tools
+- **Developer mode** - JSON payload inspection ✅
+- Real-time analytics (planned)
+- Request metrics dashboard (planned)
 
 ### Conversational Context (NEW)
 - **Chat History Sidebar:** Persistent storage using localStorage
@@ -189,9 +188,9 @@ The demo includes **3 pre-configured scenarios**:
 
 ### How to Use Demo
 1. Click scenario chips or type custom query
-2. Watch **System Logs** (left panel) for real-time processing
+2. Watch **SYSTEM_LOGS** (left panel) for real-time processing
 3. Toggle **Dev Mode** (top-right) to see JSON payloads
-4. Check **Live Stats** for metrics
+4. Monitor logs for AI processing steps
 
 ---
 
@@ -322,7 +321,7 @@ This project is created for demonstration purposes as part of a job interview pr
 ## Acknowledgements
 
 - Mango Consultant for the opportunity
-- OpenAI for GPT-3.5 API
+- Groq for Llama 3.3 70B LLM API
 - Qdrant team for vector database
 - React & FastAPI communities
 

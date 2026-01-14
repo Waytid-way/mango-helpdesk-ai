@@ -1,12 +1,9 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useSmoothScroll } from './hooks/useSmoothScroll';
-import { motion } from 'framer-motion';
-import { AnimatedSection } from './components/AnimatedSection';
 import { useChatSessions } from './hooks/useChatSessions';
 import Sidebar from './components/Sidebar';
 import {
   Database,
-  Search,
   MessageSquare,
   Zap,
   FileText,
@@ -14,7 +11,6 @@ import {
   Terminal,
   ArrowRight,
   ChevronDown,
-  Layers,
   Cpu,
   Send,
   Bot,
@@ -25,16 +21,11 @@ import {
   CheckCircle2,
   AlertTriangle,
   Clock,
-  TrendingUp,
   DollarSign,
-  BarChart3,
-  Users,
   Eye,
   EyeOff,
   Activity,
-  Lock,
-  Menu,
-  X
+  Lock
 } from 'lucide-react';
 
 // Custom Hook for Number Counter
@@ -95,10 +86,8 @@ const App = () => {
   const [input, setInput] = useState('');
   const [isTyping, setIsTyping] = useState(false);
   const [ragLogs, setRagLogs] = useState([]);
-  const [systemStatus, setSystemStatus] = useState({ state: 'IDLE', confidence: 0, dept: '-' });
 
-  // Live Stats, Dev Mode & Sidebar
-  const [liveStats, setLiveStats] = useState({ total: 0, resolved: 0, escalated: 0, costSaved: 0 });
+  // Dev Mode & Sidebar
   const [devMode, setDevMode] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
@@ -233,8 +222,6 @@ const App = () => {
   const handleReset = () => {
     createNewSession(); // Create new session instead of resetting
     setRagLogs([]);
-    setLiveStats({ total: 0, resolved: 0, escalated: 0, costSaved: 0 });
-    setSystemStatus({ state: 'IDLE', confidence: 0, dept: '-' });
     setDevMode(false);
     setSidebarOpen(false);
   };
@@ -453,7 +440,7 @@ const App = () => {
                   <div>
                     <h3 className="text-xl font-bold text-white group-hover:text-purple-400 transition-colors">WAY (RAG Engine)</h3>
                     <p className="text-slate-400 text-sm mt-1">
-                      สมองส่วนหลัง ค้นหาข้อมูลจาก Knowledge Base (Qdrant Vector DB) และสร้างคำตอบที่แม่นยำด้วย GPT-3.5
+                      สมองส่วนหลัง ค้นหาข้อมูลจาก Knowledge Base (Qdrant Vector DB) และสร้างคำตอบที่แม่นยำด้วย Groq LLM (Llama 3.3 70B)
                     </p>
                   </div>
                 </div>
@@ -496,7 +483,7 @@ const App = () => {
                   <div className="text-purple-400 font-bold mb-2">WAY RAG Engine</div>
                   <div className="flex gap-2 justify-center">
                     <span className="bg-purple-900/50 px-2 py-1 rounded text-xs">Vector Search</span>
-                    <span className="bg-purple-900/50 px-2 py-1 rounded text-xs">OpenAI</span>
+                    <span className="bg-purple-900/50 px-2 py-1 rounded text-xs">Groq LLM</span>
                   </div>
                 </div>
 
@@ -532,25 +519,6 @@ const App = () => {
               </div>
             </div>
 
-            {/* Live Analytics Dashboard */}
-            <div className="live-stat-box flex gap-4 bg-slate-900 p-2 rounded-xl border border-slate-800 shadow-xl transition-transform duration-100 ease-in-out transform hover:scale-105">
-              <div className="px-4 py-2 border-r border-slate-800">
-                <div className="text-[10px] text-slate-500 uppercase tracking-wider">Requests</div>
-                <div className="text-xl font-bold text-white">{liveStats.total}</div>
-              </div>
-              <div className="px-4 py-2 border-r border-slate-800">
-                <div className="text-[10px] text-slate-500 uppercase tracking-wider">Resolved</div>
-                <div className="text-xl font-bold text-green-400">{liveStats.resolved}</div>
-              </div>
-              <div className="px-4 py-2 border-r border-slate-800">
-                <div className="text-[10px] text-slate-500 uppercase tracking-wider">Safety Stop</div>
-                <div className="text-xl font-bold text-red-400">{liveStats.escalated}</div>
-              </div>
-              <div className="px-4 py-2">
-                <div className="text-[10px] text-slate-500 uppercase tracking-wider">Cost Saved</div>
-                <div className="text-xl font-bold text-orange-400">฿{liveStats.costSaved}</div>
-              </div>
-            </div>
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 min-h-[600px] lg:h-[700px]">
@@ -558,23 +526,6 @@ const App = () => {
             <div className="lg:col-span-1 bg-[#050911] rounded-2xl border border-slate-800 p-4 flex flex-col font-mono text-xs overflow-hidden shadow-inner">
               <div className="flex items-center justify-between mb-3 border-b border-slate-800 pb-2">
                 <span className="text-slate-400 font-bold flex items-center gap-2"><Activity className="w-3 h-3" /> SYSTEM_LOGS</span>
-                <div className="flex gap-2">
-                  <span className={`w-2 h-2 rounded-full ${systemStatus.state === 'PROCESSING' ? 'bg-yellow-500 animate-pulse' : 'bg-green-500'}`}></span>
-                </div>
-              </div>
-
-              {/* State Dashboard */}
-              <div className="grid grid-cols-2 gap-2 mb-4">
-                <div className="bg-slate-900 p-2 rounded border border-slate-800">
-                  <div className="text-slate-500 text-[10px]">DEPARTMENT</div>
-                  <div className="text-blue-400 font-bold">{systemStatus.dept}</div>
-                </div>
-                <div className="bg-slate-900 p-2 rounded border border-slate-800">
-                  <div className="text-slate-500 text-[10px]">CONFIDENCE</div>
-                  <div className={`font-bold ${systemStatus.confidence > 0.7 ? 'text-green-400' : 'text-red-400'}`}>
-                    {(systemStatus.confidence * 100).toFixed(0)}%
-                  </div>
-                </div>
               </div>
 
               <div className="flex-1 overflow-y-auto space-y-2 custom-scrollbar text-slate-300" ref={logsContainerRef}>
