@@ -33,8 +33,11 @@ Thumbs.db
 # Testing
 coverage/
 .pytest_cache/
+coverage.json
+backend/coverage.json
 
 # Misc
 *.bak
 *.tmp
 .cache/
+temp-ref-data/
