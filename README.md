@@ -2,12 +2,16 @@
 
 <div align="center">
 
-![Status](https://img.shields.io/badge/Status-Demo%20Ready-success)
-![Architecture](https://img.shields.io/badge/Architecture-WUT%20%2B%20WAY-blue)
-![Interview](https://img.shields.io/badge/Interview-Jan%2015%2C%202026-orange)
+![Paranoid Test Suite](https://github.com/Waytid-way/mango-helpdesk-ai/workflows/💀%20Paranoid%20Test%20Suite%20(0.01%25%20Error%20Rate)/badge.svg)
+![Status](https://img.shields.io/badge/Status-Production%20Ready-success)
+![Python](https://img.shields.io/badge/python-3.10%20%7C%203.11%20%7C%203.12-blue)
+![Node](https://img.shields.io/badge/node-18%20%7C%2020%20%7C%2021-green)
+![Security](https://img.shields.io/badge/Security-Hardened-brightgreen)
 
 **Helpdesk System for Mango Consultant**  
 *Revolutionizing support with Thai language RAG and safety-first business rules*
+
+> 🎯 **Target Error Rate:** 0.01% | 💀 **Paranoid Mode:** Activated | 🛡️ **XSS Protected**
 
 [Live Demo](#live-demo) • [Architecture](#architecture) • [Installation](#installation) • [Features](#key-features)
 
@@ -309,6 +313,32 @@ mango-helpdesk-ai/
 
 **WUT & WAY Team**  
 Prepared for Mango Consultant Interview - January 15, 2026
+
+---
+
+---
+
+## 🔧 Known Issues & Quick Fixes
+
+### Backend
+- **ERROR:** `ConnectionError: Cannot connect to Qdrant`
+  - **Fix:** `docker run -p 6333:6333 qdrant/qdrant:latest`
+
+- **ERROR:** `GROQ_API_KEY not found`
+  - **Fix:** Create `backend/.env` with `GROQ_API_KEY=gsk_your_key`
+
+- **ERROR:** `Vector size mismatch`
+  - **Fix:** Delete collection `curl -X DELETE http://localhost:6333/collections/mango_kb` and re-run ingestion
+
+### Frontend
+- **ERROR:** `Test timeout of 5000ms exceeded`
+  - **Fix:** Increase `testTimeout` in `vite.config.js` to 20000
+
+- **ERROR:** `fetch is not defined`
+  - **Fix:** Add fetch polyfill in `src/test/setup.js`
+
+### For complete troubleshooting guide, see:
+📘 [Troubleshooting Guide](temp_folder/📘%20Troubleshooting%20Guide%20Book%20-%20Paranoid%20Test%20Suite.md)
 
 ---
 
