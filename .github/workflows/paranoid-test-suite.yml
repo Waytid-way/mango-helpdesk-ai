@@ -170,15 +170,9 @@ jobs:
       - name: 🧪 Run Backend Tests
         env:
           QDRANT_URL: ${{ env.QDRANT_URL }}
-          GROQ_API_KEY: ${{ secrets.GROQ_API_KEY || 'test_key_for_ci' }}
+          GROQ_API_KEY: ${{ secrets.GROQ_API_KEY != '' && secrets.GROQ_API_KEY || 'test_key_for_ci' }}
         run: |
           cd backend
-          
-          # Create test config
-          cat > .env.test << EOF
-          QDRANT_URL=${{ env.QDRANT_URL }}
-          GROQ_API_KEY=${{ secrets.GROQ_API_KEY || 'test_key_for_ci' }}
-          EOF
           
           # Run tests
           pytest tests/paranoid_test.py \

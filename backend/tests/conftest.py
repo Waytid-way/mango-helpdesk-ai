@@ -4,10 +4,16 @@ Pytest configuration and fixtures
 import pytest
 from fastapi.testclient import TestClient
 import sys
+import os
 from pathlib import Path
 
 # Add app to path
 sys.path.insert(0, str(Path(__file__).parent.parent))
+
+# Set default environment variables for testing
+os.environ.setdefault('GROQ_API_KEY', 'test_key_for_ci')
+os.environ.setdefault('QDRANT_URL', 'http://localhost:6333')
+os.environ.setdefault('QDRANT_API_KEY', '')
 
 from app.main import app
 
