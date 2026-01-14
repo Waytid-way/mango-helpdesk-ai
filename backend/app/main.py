@@ -48,3 +48,14 @@ async def chat(request: ChatRequest):
     # Use the pre-loaded brain with conversation context
     response = rag_engine.generate_answer(chat_history)
     return {"response": response}
+
+class SuggestionRequest(BaseModel):
+    last_answer: str
+
+@app.post("/api/suggest")
+async def suggest(request: SuggestionRequest):
+    if not request.last_answer:
+        return {"questions": []}
+        
+    questions = rag_engine.generate_suggestions(request.last_answer)
+    return {"questions": questions}

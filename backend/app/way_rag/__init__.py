@@ -2,6 +2,7 @@ import os
 from qdrant_client import QdrantClient
 from groq import Groq
 from fastembed import TextEmbedding
+import re
 
 class WAYRAGEngine:
     def __init__(self):
@@ -40,14 +41,26 @@ class WAYRAGEngine:
             chat_history_lines.append(f"{role_label}: {msg.get('content', '')}")
         chat_history = "\n".join(chat_history_lines) if chat_history_lines else "No previous conversation."
 
+        # Layer 0: Hard Rules (The "Reflex" Layer)
+        # Block specific keywords or commands immediately
+        blocked_patterns = [
+            r"ignore previous instructions",
+            r"system prompt",
+            r"hack",
+            r"bypass"
+        ]
+        for pattern in blocked_patterns:
+            if re.search(pattern, query, re.IGNORECASE):
+                return "I cannot fulfill this request due to safety guidelines."
+
         # Step 1: Search relevant info from knowledge base
         try:
             query_vector = list(self.embed_model.embed([query]))[0]
-            search_result = self.qdrant.search(
+            search_result = self.qdrant.query_points(
                 collection_name=self.collection_name,
-                query_vector=query_vector,
+                query=query_vector,
                 limit=3
-            )
+            ).points
             
             if search_result:
                 context = "\n".join([f"- {hit.payload['content'][:800]}..." for hit in search_result])
@@ -96,3 +109,39 @@ Use the Chat History and Retrieved Context to provide accurate, contextual answe
             return completion.choices[0].message.content
         except Exception as e:
             return f"AI Error (Groq): {str(e)}"
+
+    def generate_suggestions(self, last_answer: str) -> list:
+        """
+        Generate 3 follow-up short questions based on the answer.
+        Uses Llama-3-8b for speed (Async UI pattern).
+        """
+        groq_key = os.getenv("GROQ_API_KEY")
+        if not groq_key:
+            return []
+
+        try:
+            client = Groq(api_key=groq_key)
+            prompt = f"""Given this answer: "{last_answer[:500]}"
+            
+            Generate 3 short, relevant follow-up questions a user might ask next.
+            Return ONLY the questions separated by newlines. No numbering. No bullets.
+            Example:
+            How do I reset my password?
+            Where is the office?
+            Who is the CEO?
+            """
+
+            completion = client.chat.completions.create(
+                model="llama-3.1-8b-instant",  # Use fast model
+                messages=[{"role": "user", "content": prompt}],
+                temperature=0.5,
+                max_tokens=100,
+            )
+            
+            # Clean and parse response
+            raw_text = completion.choices[0].message.content.strip()
+            questions = [q.strip() for q in raw_text.split('\n') if q.strip()]
+            return questions[:3]  # Return max 3 questions
+        except Exception as e:
+            print(f"Suggestion Error: {e}")
+            return []

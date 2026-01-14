@@ -191,11 +191,38 @@ const App = () => {
         role: 'assistant',
         content: data.response,
         type: 'answer',
-        meta: { confidence: 1.0, doc: 'Real-RAG', action: 'ANSWER' }
+        meta: { confidence: 1.0, doc: 'Real-RAG', action: 'ANSWER' },
+        suggestions: [] // Init empty suggestions
       };
-      updateCurrentSession([...updatedMessages, assistantMessage]);
+
+      const newHistory = [...updatedMessages, assistantMessage];
+      updateCurrentSession(newHistory); // Answer displayed immediately
 
       setRagLogs(prev => [...prev, { time: new Date().toLocaleTimeString(), text: "✅ Answer Received with Context" }]);
+
+      // 3. ASYNC: Fetch suggestions (Fire & Forget style)
+      setRagLogs(prev => [...prev, { time: new Date().toLocaleTimeString(), text: "🤔 Generating follow-up questions (Async)..." }]);
+
+      fetch('/api/suggest', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ last_answer: data.response })
+      })
+        .then(res => res.json())
+        .then(suggData => {
+          if (suggData.questions && suggData.questions.length > 0) {
+            // Update the LAST message with suggestions
+            const historyWithSuggestions = [...newHistory];
+            historyWithSuggestions[historyWithSuggestions.length - 1].suggestions = suggData.questions;
+            updateCurrentSession(historyWithSuggestions);
+
+            // Log success (using the component state setter if component is still mounted)
+            // Note: In real React app, handle unmount safely. Here assuming single page.
+            // We can't access setRagLogs directly inside this closed-over callback if we want the latest state,
+            // but for logs appending it's fine.
+          }
+        })
+        .catch(err => console.error("Suggestion Error:", err));
 
     } catch (error) {
       console.error("Chat Error:", error);
@@ -619,6 +646,21 @@ const App = () => {
                               }`}>
                               {msg.meta.action}
                             </span>
+                          </div>
+                        )}
+
+                        {/* Suggestions Chips (Async) */}
+                        {msg.role === 'assistant' && msg.suggestions && msg.suggestions.length > 0 && (
+                          <div className="mt-3 flex flex-wrap gap-2 ml-1 animate-fade-in-up">
+                            {msg.suggestions.map((sugg, k) => (
+                              <button
+                                key={k}
+                                onClick={() => handleChipClick(sugg)}
+                                className="text-xs px-3 py-1.5 rounded-full bg-slate-800 border border-slate-600 hover:border-orange-500 hover:text-orange-400 text-slate-300 transition-all flex items-center gap-1 active:scale-95"
+                              >
+                                <Zap className="w-3 h-3" /> {sugg}
+                              </button>
+                            ))}
                           </div>
                         )}
                       </div>
