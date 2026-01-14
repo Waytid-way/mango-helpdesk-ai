@@ -12,6 +12,10 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
+permissions:
+  contents: read
+  security-events: write  # Required for CodeQL/Trivy SARIF upload
+
 env:
   PYTHON_VERSION: '3.11'
   NODE_VERSION: '20'
@@ -62,14 +66,15 @@ jobs:
     
     services:
       qdrant:
-        image: qdrant/qdrant:latest
+        image: qdrant/qdrant:v1.7.0
         ports:
           - 6333:6333
+          - 6334:6334
         options: >-
           --health-cmd "curl -f http://localhost:6333/health || exit 1"
           --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
+          --health-timeout 10s
+          --health-retries 10
 
     steps:
       - name: 📥 Checkout Code
@@ -175,13 +180,14 @@ jobs:
           cd backend
           
           # Run tests
-          pytest tests/paranoid_test.py \
+          pytest tests/ \
             -v \
             --tb=short \
             --cov=app \
             --cov-report=xml:coverage-backend-py${{ matrix.python-version }}.xml \
             --cov-report=term-missing \
-            --timeout=60
+            --timeout=60 \
+            -k "paranoid or api or logger"
 
       - name: 📊 Upload Coverage
         uses: codecov/codecov-action@v4
