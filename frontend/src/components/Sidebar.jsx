@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import {
     Plus,
     MessageSquare,
@@ -29,6 +29,18 @@ const Sidebar = ({
         return date.toLocaleDateString('th-TH', { month: 'short', day: 'numeric' });
     };
 
+    // ESC key handler - close sidebar when ESC is pressed
+    useEffect(() => {
+        const handleEscKey = (e) => {
+            if (e.key === 'Escape' && isVisible) {
+                onToggle();
+            }
+        };
+
+        window.addEventListener('keydown', handleEscKey);
+        return () => window.removeEventListener('keydown', handleEscKey);
+    }, [isVisible, onToggle]);
+
     // Don't render if not visible
     if (!isVisible) return null;
 
@@ -41,7 +53,7 @@ const Sidebar = ({
             />
 
             {/* Sidebar Drawer - Always Fixed */}
-            <div className="fixed left-0 top-0 z-50 h-full w-80 bg-slate-950 border-r border-slate-800 flex flex-col shadow-2xl animate-slide-in">
+            <div className="fixed left-0 top-0 z-50 h-full w-3/4 md:w-80 bg-slate-950 border-r border-slate-800 flex flex-col shadow-2xl animate-slide-in">
 
                 {/* Header with Logo & Close Button */}
                 <div className="p-4 border-b border-slate-800">
@@ -106,7 +118,7 @@ const Sidebar = ({
                                     <MessageSquare className={`w-4 h-4 mt-0.5 shrink-0 ${session.id === currentSessionId ? 'text-orange-400' : 'text-slate-500'
                                         }`} />
                                     <div className="flex-1 min-w-0">
-                                        <p className={`text-sm font-medium truncate ${session.id === currentSessionId ? 'text-white' : 'text-slate-300'
+                                        <p className={`text-sm font-medium line-clamp-2 ${session.id === currentSessionId ? 'text-white' : 'text-slate-300'
                                             }`}>
                                             {session.title || 'New Chat'}
                                         </p>
@@ -123,11 +135,13 @@ const Sidebar = ({
                                 <button
                                     onClick={(e) => {
                                         e.stopPropagation();
-                                        onDeleteSession(session.id);
+                                        if (window.confirm('Are you sure you want to delete this chat history?')) {
+                                            onDeleteSession(session.id);
+                                        }
                                     }}
-                                    className="absolute right-2 top-1/2 -translate-y-1/2 p-2 
-                                        opacity-0 group-hover:opacity-100
-                                        hover:bg-red-500/20 rounded-lg transition-all"
+                                    className="absolute right-2 top-1/2 -translate-y-1/2 p-2
+                                opacity-0 group-hover:opacity-100
+                                hover:bg-red-500/20 rounded-lg transition-all"
                                 >
                                     <Trash2 className="w-4 h-4 text-red-400" />
                                 </button>
@@ -143,10 +157,10 @@ const Sidebar = ({
                         Context-Aware Mode Active
                     </div>
                 </div>
-            </div>
+            </div >
 
             {/* Inline animation style */}
-            <style>{`
+            < style > {`
                 @keyframes slide-in {
                     from { transform: translateX(-100%); }
                     to { transform: translateX(0); }
