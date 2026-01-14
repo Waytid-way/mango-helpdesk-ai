@@ -20,3 +20,4 @@ GitPython
 requests
 httpx
 loguru
+slowapi
