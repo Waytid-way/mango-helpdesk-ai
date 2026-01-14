@@ -41,3 +41,4 @@ backend/coverage.json
 *.tmp
 .cache/
 temp-ref-data/
+temp_folder/

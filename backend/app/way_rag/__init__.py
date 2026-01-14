@@ -1,4 +1,5 @@
 import os
+import asyncio
 from qdrant_client import QdrantClient
 from groq import Groq
 from fastembed import TextEmbedding
@@ -12,11 +13,14 @@ class WAYRAGEngine:
         self.qdrant = QdrantClient(url=qdrant_url, api_key=qdrant_key)
         self.collection_name = "mango_kb"
         
+        # Semaphore to limit concurrent Qdrant operations (prevent connection exhaustion)
+        self.qdrant_semaphore = asyncio.Semaphore(5)  # Max 5 concurrent queries
+        
         # 2. Setup Local Embedding (Free Brain for Search)
         print("🧠 Loading Local Embedding Model...")
         self.embed_model = TextEmbedding(model_name="BAAI/bge-small-en-v1.5")
 
-    def generate_answer(self, messages: list):
+    async def generate_answer(self, messages: list):
         """
         Generate answer with conversation context.
         
@@ -56,11 +60,24 @@ class WAYRAGEngine:
         # Step 1: Search relevant info from knowledge base
         try:
             query_vector = list(self.embed_model.embed([query]))[0]
-            search_result = self.qdrant.query_points(
-                collection_name=self.collection_name,
-                query=query_vector,
-                limit=3
-            ).points
+            
+            # Use semaphore to limit concurrent Qdrant connections + timeout protection
+            async with self.qdrant_semaphore:
+                try:
+                    # Run blocking Qdrant call in thread pool with timeout
+                    search_result = await asyncio.wait_for(
+                        asyncio.to_thread(
+                            self.qdrant.query_points,
+                            collection_name=self.collection_name,
+                            query=query_vector,
+                            limit=3
+                        ),
+                        timeout=3.0  # 3 second timeout
+                    )
+                    search_result = search_result.points
+                except asyncio.TimeoutError:
+                    print("⏱️ Qdrant query timeout (3s)")
+                    return "I'm experiencing high load. Please try again in a moment."
             
             if search_result:
                 context = "\n".join([f"- {hit.payload['content'][:800]}..." for hit in search_result])

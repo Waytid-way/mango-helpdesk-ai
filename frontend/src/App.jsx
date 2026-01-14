@@ -27,6 +27,7 @@ import {
   Activity,
   Lock
 } from 'lucide-react';
+import { sanitize } from './utils/sanitize';
 
 // Custom Hook for Number Counter
 const useCounter = (end, duration = 2000, start = 0, shouldStart = false) => {
@@ -149,9 +150,14 @@ const App = () => {
   }, [ragLogs]);
 
   // --- LOGIC: Real WUT + WAY Architecture (Connected to Render Backend) ---
+  const isSubmittingRef = useRef(false);
+
   const handleSend = async (e) => {
     e.preventDefault();
-    if (!input.trim()) return;
+
+    // Debounce/Double-submission guard
+    if (isSubmittingRef.current || !input.trim()) return;
+    isSubmittingRef.current = true; // Lock
 
     const userMsg = input;
     setInput('');
@@ -234,6 +240,7 @@ const App = () => {
       updateCurrentSession([...updatedMessages, errorMessage]);
     } finally {
       setIsTyping(false);
+      isSubmittingRef.current = false; // Unlock
     }
   };
 
@@ -615,10 +622,9 @@ const App = () => {
                               <pre>{JSON.stringify(msg.debug, null, 2)}</pre>
                             </div>
                           ) : (
-                            <div className="whitespace-pre-line">
-                              {msg.type === 'alert' && <div className="font-bold mb-1 flex items-center gap-2 uppercase tracking-wide text-xs"><ShieldAlert className="w-4 h-4" /> Security Intervention</div>}
-                              {msg.content}
-                            </div>
+                            <div className="whitespace-pre-line" dangerouslySetInnerHTML={{
+                              __html: sanitize(msg.content)
+                            }} />
                           )}
                         </div>
 

@@ -249,6 +249,32 @@ All 4 major tasks completed successfully:
 **See [walkthrough.md](file:///C:/Users/com/.gemini/antigravity/brain/af9fbe5f-2651-4b83-a7ac-15d6bd0f3871/walkthrough.md) for detailed documentation.**
 
 
+## 📋 Phase 6: Frontend Resilience & Security Hardening (Paranoid QA Response)
+
+**Status:** In Progress
+**Objective:** Address critical vulnerabilities found during Paranoid QA Mode testing (26/33 failures)
+**Reference:** `C:\Users\com\Documents\mango-helpdesk-ai\temp_folder\frontendTestmode.md`
+
+### 🛡️ Critical Fixes Planned
+
+#### 6.1 XSS Prevention (Priority 1)
+- **Problem:** AI responses are rendered dangerously, susceptible to script injection
+- **Fix:** Implement `DOMPurify` sanitizer for all Markdown/HTML rendering
+- **Target:** Pass T801_XSS_ATTEMPT (currently failing)
+
+#### 6.2 Debouncing (Priority 2)
+- **Problem:** "Send" button can be spammed, leading to duplicate requests
+- **Fix:** Implement `useRef` lock mechanism + visual disabled state
+- **Target:** Pass UI Interaction tests
+
+#### 6.3 Error Boundaries (Priority 3)
+- **Problem:** App crashes white screen on JSON errors or network failures
+- **Fix:** Add `react-error-boundary` with retry mechanism
+- **Target:** Pass T_API_INTEGRATION tests
+
+---
+
+
 ---
 
 ## 📋 Phase 6: RAG Suggested Questions (Async UI)

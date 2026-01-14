@@ -1,20 +1,47 @@
 /**
- * Vitest setup file
- * Global test configuration and mocks
+ * Vitest Global Test Setup
+ * ========================
+ * Configuration for paranoid-level testing
  */
-import { expect, afterEach, vi } from 'vitest';
+
+import { expect, afterEach, vi, beforeAll, afterAll } from 'vitest';
 import { cleanup } from '@testing-library/react';
 import '@testing-library/jest-dom';
+import { server } from './mocks/server';
 
-// Cleanup after each test
+// Establish API mocking before all tests
+beforeAll(() => server.listen({ onUnhandledRequest: 'error' }));
+
+// Reset any request handlers added in individual tests
 afterEach(() => {
+  server.resetHandlers();
   cleanup();
+  vi.clearAllMocks();
+  localStorage.clear();
+  sessionStorage.clear();
 });
 
-// Mock window.matchMedia
+// Clean up after all tests are done
+afterAll(() => server.close());
+
+// Global timeout for all tests (paranoid: shorter timeout = faster feedback)
+vi.setConfig({ testTimeout: 10000 });
+
+// Mock window.scrollTo (used in many components)
+global.scrollTo = vi.fn();
+global.scrollBy = vi.fn();
+
+// Mock IntersectionObserver
+global.IntersectionObserver = vi.fn(() => ({
+  observe: vi.fn(),
+  unobserve: vi.fn(),
+  disconnect: vi.fn(),
+}));
+
+// Mock matchMedia (for responsive tests)
 Object.defineProperty(window, 'matchMedia', {
   writable: true,
-  value: vi.fn().mockImplementation((query) => ({
+  value: vi.fn().mockImplementation(query => ({
     matches: false,
     media: query,
     onchange: null,
@@ -26,31 +53,31 @@ Object.defineProperty(window, 'matchMedia', {
   })),
 });
 
-// Mock IntersectionObserver
-global.IntersectionObserver = class IntersectionObserver {
-  constructor() {}
-  disconnect() {}
-  observe() {}
-  unobserve() {}
-  takeRecords() {
-    return [];
-  }
-};
+// Mock ResizeObserver
+global.ResizeObserver = vi.fn(() => ({
+  observe: vi.fn(),
+  unobserve: vi.fn(),
+  disconnect: vi.fn(),
+}));
 
-// Suppress console errors in tests (optional)
-const originalError = console.error;
-beforeAll(() => {
-  console.error = (...args) => {
-    if (
-      typeof args[0] === 'string' &&
-      args[0].includes('Warning: ReactDOM.render')
-    ) {
-      return;
+// Mock requestAnimationFrame
+global.requestAnimationFrame = vi.fn((cb) => setTimeout(cb, 16));
+global.cancelAnimationFrame = vi.fn((id) => clearTimeout(id));
+
+// Add custom matchers
+expect.extend({
+  toBeValidJSON(received) {
+    try {
+      JSON.parse(received);
+      return {
+        message: () => `expected ${received} not to be valid JSON`,
+        pass: true,
+      };
+    } catch (e) {
+      return {
+        message: () => `expected ${received} to be valid JSON but got error: ${e.message}`,
+        pass: false,
+      };
     }
-    originalError.call(console, ...args);
-  };
-});
-
-afterAll(() => {
-  console.error = originalError;
+  },
 });
