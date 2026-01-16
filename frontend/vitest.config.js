@@ -7,7 +7,7 @@ export default defineConfig({
   test: {
     globals: true,
     environment: 'jsdom',
-    setupFiles: './src/tests/setup.js',
+    setupFiles: './src/test/setup.js',
     testTimeout: 10000, // 10s for slow operations (long messages, slow CI)
     retry: 0, // No retry - detect race conditions immediately
     silent: false, // Show all warnings for debugging

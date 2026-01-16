@@ -197,7 +197,15 @@ const App = () => {
         role: 'assistant',
         content: data.response,
         type: 'answer',
-        meta: { confidence: 1.0, doc: 'Real-RAG', action: 'ANSWER' },
+        meta: {
+          confidence: 1.0,
+          doc: 'Real-RAG',
+          action: data.meta?.intent === 'action_request' ? 'CREATE_TICKET' : 'AUTO_RESOLVE', // Simple mapping
+          // New Fields
+          department: data.meta?.department,
+          intent: data.meta?.intent,
+          urgency: data.meta?.urgency
+        },
         suggestions: [] // Init empty suggestions
       };
 
@@ -631,6 +639,24 @@ const App = () => {
                         {/* Meta Tags */}
                         {msg.role === 'assistant' && msg.meta && !devMode && (
                           <div className="flex gap-2 mt-2 ml-1 flex-wrap">
+                            {/* Department Chip */}
+                            {msg.meta.department && (
+                              <span className="text-[10px] px-2 py-0.5 rounded border flex items-center gap-1 bg-blue-500/10 border-blue-500/30 text-blue-400">
+                                <Database className="w-3 h-3" /> {msg.meta.department}
+                              </span>
+                            )}
+
+                            {/* Urgency Chip (Color Coded) */}
+                            {msg.meta.urgency && (
+                              <span className={`text-[10px] px-2 py-0.5 rounded border flex items-center gap-1 font-bold ${msg.meta.urgency === 'high' ? 'bg-red-500/10 border-red-500/30 text-red-400' :
+                                msg.meta.urgency === 'medium' ? 'bg-yellow-500/10 border-yellow-500/30 text-yellow-400' :
+                                  'bg-green-500/10 border-green-500/30 text-green-400'
+                                }`}>
+                                <Activity className="w-3 h-3" /> {msg.meta.urgency.toUpperCase()}
+                              </span>
+                            )}
+
+                            {/* Legacy Confidence Chip (if exists) */}
                             {msg.meta.confidence > 0 && (
                               <span className={`text-[10px] px-2 py-0.5 rounded border flex items-center gap-1 ${msg.meta.confidence >= 0.7
                                 ? 'bg-green-500/10 border-green-500/30 text-green-400'
