@@ -17,10 +17,22 @@ os.environ.setdefault('QDRANT_API_KEY', '')
 
 from app.main import app
 
+# Mock RAG engine for testing
+class MockRAGEngine:
+    async def generate_answer(self, chat_history):
+        """Mock generate_answer method"""
+        return "This is a test response from the helpdesk AI."
+    
+    def generate_suggestions(self, last_answer):
+        """Mock generate_suggestions method"""
+        return ["How do I reset my password?", "Where can I find documentation?"]
 
 @pytest.fixture
 def client():
-    """FastAPI test client"""
+    """FastAPI test client with mocked RAG engine"""
+    # Mock the RAG engine to avoid needing Qdrant/Groq in tests
+    import app.main as main_module
+    main_module.rag_engine = MockRAGEngine()
     return TestClient(app)
 
 
@@ -28,8 +40,12 @@ def client():
 def sample_query():
     """Sample query request for testing"""
     return {
-        "text": "ขอรีเซ็ตรหัสผ่านอีเมล",
-        "language": "th"
+        "messages": [
+            {
+                "role": "user",
+                "content": "ขอรีเซ็ตรหัสผ่านอีเมล"
+            }
+        ]
     }
 
 
@@ -37,8 +53,12 @@ def sample_query():
 def sample_query_en():
     """Sample English query for testing"""
     return {
-        "text": "How do I reset my password?",
-        "language": "en"
+        "messages": [
+            {
+                "role": "user",
+                "content": "How do I reset my password?"
+            }
+        ]
     }
 
 

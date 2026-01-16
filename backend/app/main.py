@@ -36,6 +36,21 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+@app.get("/")
+async def root():
+    """Root endpoint - service info"""
+    return {
+        "service": "Mango Helpdesk AI",
+        "status": "online",
+        "version": "1.0.0",
+        "architecture": "WUT + WAY"
+    }
+
+@app.get("/health")
+async def health_check():
+    """Health check endpoint"""
+    return {"status": "healthy"}
+
 from enum import Enum
 from pydantic import field_validator
 

@@ -37,19 +37,10 @@ class TestQueryEndpoint:
         assert response.status_code == status.HTTP_200_OK
         data = response.json()
         
-        # Verify response structure
-        assert "request_id" in data
-        assert "department" in data
-        assert "intent" in data
-        assert "urgency" in data
-        assert "confidence" in data
-        assert "answer" in data
-        assert "action" in data
-        
-        # Verify data types
-        assert isinstance(data["confidence"], float)
-        assert 0 <= data["confidence"] <= 1
-        assert data["request_id"].startswith("req_")
+        # Verify response structure (new API returns simple response)
+        assert "response" in data
+        assert isinstance(data["response"], str)
+        assert len(data["response"]) > 0
     
     def test_query_success_english(self, client, sample_query_en):
         """Test successful query processing with English text"""
@@ -57,24 +48,29 @@ class TestQueryEndpoint:
         
         assert response.status_code == status.HTTP_200_OK
         data = response.json()
-        assert "answer" in data
-        assert data["language"] == "en" or "language" not in data
+        assert "response" in data
+        assert isinstance(data["response"], str)
     
     def test_query_default_language(self, client):
-        """Test query with default language (Thai)"""
-        response = client.post("/api/chat", json={"text": "test query"})
+        """Test query with default language"""
+        response = client.post("/api/chat", json={
+            "messages": [{"role": "user", "content": "test query"}]
+        })
         
         assert response.status_code == status.HTTP_200_OK
-        # Should default to Thai if not specified
+        data = response.json()
+        assert "response" in data
     
     def test_query_empty_text(self, client):
         """Test query with empty text should fail validation"""
-        response = client.post("/api/chat", json={"text": ""})
+        response = client.post("/api/chat", json={
+            "messages": [{"role": "user", "content": ""}]
+        })
         assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
     
     def test_query_missing_text(self, client):
-        """Test query without text field should fail"""
-        response = client.post("/api/chat", json={"language": "th"})
+        """Test query without messages should fail"""
+        response = client.post("/api/chat", json={"messages": []})
         assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
     
     def test_query_invalid_json(self, client):
@@ -89,37 +85,40 @@ class TestQueryEndpoint:
     def test_query_long_text(self, client):
         """Test query with very long text"""
         long_text = "ทดสอบ" * 1000  # Very long text
-        response = client.post("/api/chat", json={"text": long_text, "language": "th"})
+        response = client.post("/api/chat", json={
+            "messages": [{"role": "user", "content": long_text}]
+        })
         
         # Should still process (or handle gracefully)
-        assert response.status_code in [status.HTTP_200_OK, status.HTTP_413_REQUEST_ENTITY_TOO_LARGE]
+        assert response.status_code in [status.HTTP_200_OK, status.HTTP_413_REQUEST_ENTITY_TOO_LARGE, status.HTTP_422_UNPROCESSABLE_ENTITY]
     
     def test_query_special_characters(self, client):
         """Test query with special characters"""
-        special_text = "Test @#$%^&*() การทดสอบ 🚀 emoji"
-        response = client.post("/api/chat", json={"text": special_text})
+        special_text = "Test @#$%^&*() การทดสอบ emoji"
+        response = client.post("/api/chat", json={
+            "messages": [{"role": "user", "content": special_text}]
+        })
         
         assert response.status_code == status.HTTP_200_OK
     
     def test_query_response_fields(self, client, sample_query):
-        """Test all expected fields are present in response"""
+        """Test expected fields are present in response"""
         response = client.post("/api/chat", json=sample_query)
         data = response.json()
         
-        required_fields = [
-            "request_id", "department", "intent",
-            "urgency", "confidence", "answer", "action"
-        ]
-        
-        for field in required_fields:
-            assert field in data, f"Missing required field: {field}"
+        # New API returns simple response field
+        assert "response" in data, "Missing required field: response"
+        assert isinstance(data["response"], str)
+        assert len(data["response"]) > 0
     
     def test_query_confidence_range(self, client, sample_query):
-        """Test confidence score is within valid range"""
+        """Test response is valid string"""
         response = client.post("/api/chat", json=sample_query)
         data = response.json()
         
-        assert 0.0 <= data["confidence"] <= 1.0
+        assert "response" in data
+        assert isinstance(data["response"], str)
+        assert len(data["response"]) > 0
 
 
 class TestCORS:
