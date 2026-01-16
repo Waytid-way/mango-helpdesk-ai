@@ -70,7 +70,9 @@ describe('App Component - PARANOID MODE', () => {
             await userEvent.click(sendButton);
 
             // Should not add any user message
-            expect(screen.queryByText(/^$/)).not.toBeInTheDocument();
+            await waitFor(() => {
+                expect(screen.queryByText(/^$/)).not.toBeInTheDocument();
+            });
         });
 
         it('should reject whitespace-only messages', async () => {
@@ -82,18 +84,37 @@ describe('App Component - PARANOID MODE', () => {
             await userEvent.click(sendButton);
 
             // Input should be cleared but no message sent
-            expect(input).toHaveValue('');
+            await waitFor(() => {
+                expect(input).toHaveValue('');
+            });
         });
 
         it('should handle very long messages (10000+ chars)', async () => {
             render(<App />);
             const input = screen.getByPlaceholderText(/พิมพ์คำถาม/i);
+            const sendButton = screen.getByRole('button', { name: /send/i });
 
             const longMessage = 'A'.repeat(10000);
             await userEvent.type(input, longMessage);
 
-            expect(input.value.length).toBe(10000);
-            // Should not crash
+            // Wait for input update
+            await waitFor(() => {
+                expect(input.value.length).toBe(10000);
+            }, { timeout: 3000 });
+
+            // Ensure button enabled
+            await waitFor(() => {
+                expect(sendButton).not.toBeDisabled();
+            });
+
+            await userEvent.click(sendButton);
+
+            // Wait for message to be sent and input cleared
+            await waitFor(() => {
+                expect(input).toHaveValue('');
+            }, { timeout: 5000 });
+
+            // Should not crash and input should still exist
             expect(input).toBeInTheDocument();
         });
 
@@ -135,8 +156,10 @@ describe('App Component - PARANOID MODE', () => {
             const thaiText = 'ขอสู\u0e39ตรทำข\u0e49าวมันไก่';
             await userEvent.type(input, thaiText);
 
-            expect(input.value).toContain('สูตร');
-            expect(input.value).toContain('ข้าว');
+            await waitFor(() => {
+                expect(input.value).toContain('สูตร');
+                expect(input.value).toContain('ข้าว');
+            });
         });
     });
 
@@ -354,7 +377,9 @@ describe('App Component - PARANOID MODE', () => {
             await userEvent.click(resetButton);
 
             // Old message should be gone
-            expect(screen.queryByText(/Test message/i)).not.toBeInTheDocument();
+            await waitFor(() => {
+                expect(screen.queryByText(/Test message/i)).not.toBeInTheDocument();
+            });
         });
     });
 
@@ -379,8 +404,10 @@ describe('App Component - PARANOID MODE', () => {
             await userEvent.click(sendButton);
 
             // Input should be disabled during API call
-            expect(input).toBeDisabled();
-            expect(sendButton).toBeDisabled();
+            await waitFor(() => {
+                expect(input).toBeDisabled();
+                expect(sendButton).toBeDisabled();
+            });
 
             await waitFor(() => {
                 expect(input).not.toBeDisabled();
@@ -413,11 +440,15 @@ describe('App Component - PARANOID MODE', () => {
             const input = screen.getByPlaceholderText(/พิมพ์คำถาม/i);
 
             await userEvent.type(input, 'Test message');
-            expect(input).toHaveValue('Test message');
+            await waitFor(() => {
+                expect(input).toHaveValue('Test message');
+            });
 
             await userEvent.click(screen.getByRole('button', { name: /send/i }));
 
-            expect(input).toHaveValue('');
+            await waitFor(() => {
+                expect(input).toHaveValue('');
+            });
         });
 
         it('should handle rapid clicking (debounce)', async () => {
@@ -470,7 +501,9 @@ describe('App Component - PARANOID MODE', () => {
             await userEvent.click(chip);
 
             const input = screen.getByPlaceholderText(/พิมพ์คำถาม/i);
-            expect(input.value).toContain('รหัสผ่าน');
+            await waitFor(() => {
+                expect(input.value).toContain('รหัสผ่าน');
+            });
         });
 
         it('should handle suggestion chip clicks (async)', async () => {
@@ -496,7 +529,9 @@ describe('App Component - PARANOID MODE', () => {
             const suggestionChip = screen.getByText(/How do I reset password\?/i);
             await userEvent.click(suggestionChip);
 
-            expect(input.value).toContain('How do I reset password?');
+            await waitFor(() => {
+                expect(input.value).toContain('How do I reset password?');
+            });
         });
     });
 
@@ -565,11 +600,13 @@ describe('App Component - PARANOID MODE', () => {
             render(<App />);
             const input = screen.getByPlaceholderText(/พิมพ์คำถาม/i);
 
-            await userEvent.type(input, pollutionPayload);
+            await userEvent.paste(input, pollutionPayload);
             await userEvent.click(screen.getByRole('button', { name: /send/i }));
 
             // Prototype should not be polluted
-            expect(Object.prototype.isAdmin).toBeUndefined();
+            await waitFor(() => {
+                expect(Object.prototype.isAdmin).toBeUndefined();
+            });
         });
     });
 });

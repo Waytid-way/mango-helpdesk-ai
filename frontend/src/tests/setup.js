@@ -50,9 +50,13 @@ global.IntersectionObserver = class IntersectionObserver {
 };
 
 // Mock ResizeObserver
-global.ResizeObserver = class ResizeObserver {
-    constructor() { }
-    disconnect() { }
-    observe() { }
-    unobserve() { }
-};
+// Mock ResizeObserver
+// Mock ResizeObserver
+const ResizeObserverMock = vi.fn(() => ({
+    disconnect: vi.fn(),
+    observe: vi.fn(),
+    unobserve: vi.fn(),
+}));
+
+vi.stubGlobal('ResizeObserver', ResizeObserverMock);
+window.ResizeObserver = ResizeObserverMock;

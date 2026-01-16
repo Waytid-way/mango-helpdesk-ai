@@ -90,25 +90,6 @@ jobs:
           pip install -r requirements.txt
           pip install pytest pytest-cov pytest-timeout numpy
 
-      - name: 🏥 Wait for Qdrant to be ready
-        run: |
-          echo "⏳ Waiting for Qdrant to be ready..."
-          
-          for i in {1..60}; do
-            if curl -f -s http://localhost:6333/health > /dev/null 2>&1; then
-              echo "✅ Qdrant is ready after $i seconds"
-              curl -s http://localhost:6333/health | head -5
-              exit 0
-            fi
-            echo "⏳ Attempt $i/60: Waiting for Qdrant..."
-            sleep 1
-          done
-          
-          echo "❌ Qdrant failed to start after 60 seconds"
-          echo "Debug info:"
-          curl -v http://localhost:6333/health || true
-          exit 1
-
       # Run RAG ingestion tests with Qdrant service
       - name: 🧪 Run RAG Ingestion Tests
         env:
