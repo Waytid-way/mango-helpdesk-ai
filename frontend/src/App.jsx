@@ -730,6 +730,7 @@ const App = () => {
                   />
                   <button
                     type="submit"
+                    aria-label="Send message"
                     disabled={!input.trim() || isTyping}
                     className="absolute right-2 top-2 p-2 bg-orange-500 hover:bg-orange-600 rounded-lg text-white disabled:opacity-50 disabled:cursor-not-allowed transition-colors hover:scale-105 active:scale-95"
                   >

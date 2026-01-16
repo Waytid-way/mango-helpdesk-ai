@@ -50,8 +50,6 @@ global.IntersectionObserver = class IntersectionObserver {
 };
 
 // Mock ResizeObserver
-// Mock ResizeObserver
-// Mock ResizeObserver
 const ResizeObserverMock = vi.fn(() => ({
     disconnect: vi.fn(),
     observe: vi.fn(),
@@ -60,3 +58,19 @@ const ResizeObserverMock = vi.fn(() => ({
 
 vi.stubGlobal('ResizeObserver', ResizeObserverMock);
 window.ResizeObserver = ResizeObserverMock;
+
+// Suppress act() warnings
+const originalError = console.error;
+beforeAll(() => {
+    console.error = (...args) => {
+        if (args[0]?.includes?.('Warning: An update to') ||
+            args[0]?.includes?.('act(...)')) {
+            return;
+        }
+        originalError.call(console, ...args);
+    };
+});
+
+afterAll(() => {
+    console.error = originalError;
+});

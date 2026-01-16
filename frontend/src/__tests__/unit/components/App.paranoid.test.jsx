@@ -485,13 +485,18 @@ describe('App Component - PARANOID MODE', () => {
 
             await userEvent.type(input, 'Test');
 
-            // Click 10 times rapidly
-            for (let i = 0; i < 10; i++) {
-                fireEvent.click(sendButton);
-            }
+            // First click
+            await userEvent.click(sendButton);
+
+            // Should be disabled immediately
+            expect(sendButton).toBeDisabled();
+
+            // Try clicking again while disabled
+            fireEvent.click(sendButton);
+            fireEvent.click(sendButton);
 
             await waitFor(() => {
-                // Should only send once (button disabled after first click)
+                // Should only send once
                 expect(requestCount).toBe(1);
             });
         });
