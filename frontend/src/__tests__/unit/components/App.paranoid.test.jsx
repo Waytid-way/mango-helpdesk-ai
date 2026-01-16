@@ -32,27 +32,35 @@ describe('App Component - PARANOID MODE', () => {
             expect(() => render(<App />)).not.toThrow();
         });
 
-        it('should display the main heading', () => {
+        it('should display the main heading', async () => {
             render(<App />);
-            expect(screen.getByText(/Revolutionizing Support/i)).toBeInTheDocument();
+            await waitFor(() => {
+                expect(screen.getByText(/Revolutionizing Support/i)).toBeInTheDocument();
+            });
         });
 
-        it('should show initial greeting message', () => {
+        it('should show initial greeting message', async () => {
             render(<App />);
-            expect(screen.getByText(/สวัสดีครับ/i)).toBeInTheDocument();
+            await waitFor(() => {
+                expect(screen.getByText(/สวัสดีครับ/i)).toBeInTheDocument();
+            });
         });
 
-        it('should render all major sections', () => {
+        it('should render all major sections', async () => {
             render(<App />);
-            expect(screen.getByText(/The Challenge at Mango Consultant/i)).toBeInTheDocument();
-            expect(screen.getByText(/WUT \+ WAY Architecture/i)).toBeInTheDocument();
-            expect(screen.getByText(/Interactive Demo/i)).toBeInTheDocument();
+            await waitFor(() => {
+                expect(screen.getByText(/The Challenge at Mango Consultant/i)).toBeInTheDocument();
+                expect(screen.getByText(/WUT \+ WAY Architecture/i)).toBeInTheDocument();
+                expect(screen.getByText(/Interactive Demo/i)).toBeInTheDocument();
+            });
         });
 
-        it('should have accessible navigation', () => {
+        it('should have accessible navigation', async () => {
             render(<App />);
-            const nav = screen.getByRole('navigation', { hidden: true });
-            expect(nav).toBeInTheDocument();
+            await waitFor(() => {
+                const nav = screen.getByRole('navigation', { hidden: true });
+                expect(nav).toBeInTheDocument();
+            });
         });
     });
 
@@ -157,12 +165,14 @@ describe('App Component - PARANOID MODE', () => {
             await userEvent.type(input, thaiText);
 
             await waitFor(() => {
-                expect(input.value).toContain('สูตร');
-                expect(input.value).toContain('ข้าว');
+                expect(input).toHaveValue(expect.stringContaining('สูตร'));
+                expect(input).toHaveValue(expect.stringContaining('ข้าว'));
+                // Use button enablement as proxy for state settlement
+                const sendButton = screen.getByRole('button', { name: /send/i });
+                expect(sendButton).not.toBeDisabled();
             });
         });
     });
-
     // ==========================================
     // CATEGORY 3: API INTEGRATION
     // ==========================================
@@ -258,7 +268,9 @@ describe('App Component - PARANOID MODE', () => {
             await userEvent.click(screen.getByRole('button', { name: /send/i }));
 
             // Should show loading state
-            expect(screen.getByText(/thinking/i)).toBeInTheDocument();
+            await waitFor(() => {
+                expect(screen.getByText(/thinking/i)).toBeInTheDocument();
+            });
         }, 20000); // Extend test timeout
 
         it('should include conversation history in API request', async () => {
@@ -312,7 +324,7 @@ describe('App Component - PARANOID MODE', () => {
             });
         });
 
-        it('should restore chat history from localStorage on mount', () => {
+        it('should restore chat history from localStorage on mount', async () => {
             const mockSession = {
                 id: 'test-123',
                 messages: [
@@ -326,16 +338,20 @@ describe('App Component - PARANOID MODE', () => {
 
             render(<App />);
 
-            expect(screen.getByText(/Hello from storage/i)).toBeInTheDocument();
+            await waitFor(() => {
+                expect(screen.getByText(/Hello from storage/i)).toBeInTheDocument();
+            });
         });
 
-        it('should handle corrupted localStorage gracefully', () => {
+        it('should handle corrupted localStorage gracefully', async () => {
             localStorage.setItem('chat_sessions', 'INVALID_JSON{{{');
 
             expect(() => render(<App />)).not.toThrow();
 
             // Should start with fresh session
-            expect(screen.getByText(/สวัสดีครับ/i)).toBeInTheDocument();
+            await waitFor(() => {
+                expect(screen.getByText(/สวัสดีครับ/i)).toBeInTheDocument();
+            });
         });
 
         it('should limit conversation history to last 6 messages', async () => {
@@ -428,7 +444,9 @@ describe('App Component - PARANOID MODE', () => {
             await userEvent.type(input, 'Test');
             await userEvent.click(screen.getByRole('button', { name: /send/i }));
 
-            expect(screen.getByText(/thinking/i)).toBeInTheDocument();
+            await waitFor(() => {
+                expect(screen.getByText(/thinking/i)).toBeInTheDocument();
+            });
 
             await waitFor(() => {
                 expect(screen.queryByText(/thinking/i)).not.toBeInTheDocument();
