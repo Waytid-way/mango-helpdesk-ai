@@ -2,44 +2,35 @@
 WUT Orchestrator Module
 Handles classification and decision logic
 """
+from .classifier import GroqClassifier
 
 class WUTClassifier:
     """Classifies incoming queries by department, intent, and urgency"""
     
-    def classify(self, text: str):
-        """Keyword-based classification for departments, intent, and urgency"""
-        text_lower = text.lower()
+    
+    def __init__(self):
+        self.ai_classifier = GroqClassifier()
+        self.decision_engine = DecisionEngine()
+    
+    async def classify(self, text: str):
+        """AI-based classification with Business Rules"""
+        # 1. AI Classification
+        ai_result = self.ai_classifier.classify(text)
         
-        # Department classification
-        department = "General"
-        if any(word in text_lower for word in ["password", "login", "network", "computer", "laptop", "software", "printer"]):
-            department = "IT"
-        elif any(word in text_lower for word in ["leave", "ลา", "sick", "vacation", "พักร้อน", "holiday", "hr", "payroll", "salary", "เงินเดือน"]):
-            department = "HR"
-        elif any(word in text_lower for word in ["invoice", "payment", "accounting", "บัญชี", "receipt", "tax"]):
-            department = "Accounting"
-        
-        # Intent classification
-        intent = "question"
-        if any(word in text_lower for word in ["request", "need", "want", "ขอ", "create", "ticket"]):
-            intent = "action_request"
-        elif any(word in text_lower for word in ["?", "how", "what", "when", "where", "why", "อย่างไร", "ทำไม"]):
-            intent = "question"
-        elif any(word in text_lower for word in ["problem", "issue", "error", "not working", "broken", "ปัญหา", "เสีย"]):
-            intent = "problem_report"
-        
-        # Urgency classification
-        urgency = "low"
-        if any(word in text_lower for word in ["urgent", "emergency", "critical", "asap", "immediately", "ด่วน"]):
-            urgency = "high"
-        elif any(word in text_lower for word in ["soon", "quickly", "priority"]):
-            urgency = "medium"
+        # 2. Apply Business Rules (Decision Engine)
+        # Note: Groq doesn't provide fine-grained confidence yet, defaulting to 1.0 for now
+        action = self.decision_engine.decide(
+            confidence=1.0, 
+            department=ai_result.get("department", "General"),
+            intent=ai_result.get("intent", "question")
+        )
         
         return {
-            "department": department,
-            "intent": intent,
-            "urgency": urgency
+            **ai_result,
+            "action": action,
+            "confidence": 1.0 # Placeholder until logprobs are supported
         }
+
 class DecisionEngine:
     """Business rules engine for determining actions"""
     

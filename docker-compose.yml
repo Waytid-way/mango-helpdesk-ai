@@ -47,9 +47,25 @@ services:
     networks:
       - mango-network
 
+  # PostgreSQL Database
+  db:
+    image: postgres:15-alpine
+    restart: always
+    environment:
+      - POSTGRES_USER=mango_user
+      - POSTGRES_PASSWORD=mango_password
+      - POSTGRES_DB=mango_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - mango-network
+
 networks:
   mango-network:
     driver: bridge
 
 volumes:
   qdrant_storage:
+  postgres_data:

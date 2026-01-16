@@ -38,34 +38,30 @@ Mango Helpdesk AI เป็นระบบ Chatbot ที่ออกแบบ�
 
 ## Architecture
 
-```
-┌─────────────┐
-│   User      │
-│  (Frontend) │
-└──────┬──────┘
-       │
-       ↓
-┌──────────────────────────────┐
-│   WUT Orchestrator           │
-│  ┌─────────────────────────┐ │
-│  │  Classifier             │ │ → Department, Intent, Urgency
-│  └─────────────────────────┘ │
-│  ┌─────────────────────────┐ │
-│  │  Decision Engine        │ │ → Business Rules & Safety
-│  └─────────────────────────┘ │
-└──────────────┬───────────────┘
-               │
-               ↓
-┌──────────────────────────────┐
-│   WAY RAG Engine             │
-│  ┌─────────────────────────┐ │
-│  │  Vector Search (Qdrant) │ │ → Find relevant docs
-│  └─────────────────────────┘ │
-│  ┌─────────────────────────┐ │
-│  │  LLM (Groq)             │ │ → Generate answer
-│  └─────────────────────────┘ │
-└──────────────────────────────┘
-```
+### **Current Stack (WUT + WAY)**
+
+| Component | Technology | Role |
+| :--- | :--- | :--- |
+| **Frontend** | React + Vite + Tailwind | Responsive UI with "Brain Visualization" Chips |
+| **Orchestrator** | **FastAPI + Llama-3 (Groq)** | **WUT Engine**: Classifies Dept, Intent, Urgency |
+| **RAG Engine** | **Qdrant + FastEmbed** | **WAY Engine**: Retrieves context for accurate answers |
+| **Database** | **PostgreSQL (AsyncPG)** | Stores system config, logs, and future ticket data |
+| **Security** | Pydantic + OWASP | Strict Input Validation & Safety-First Logic |
+
+### **Core Systems**
+
+1.  **WUT (The Frontal Lobe)**:
+    -   Uses **Llama-3.1-8b** to analyze incoming queries.
+    -   Output: `{"department": "IT", "intent": "problem_report", "urgency": "high"}`.
+    -   Displays this "thought process" on the UI.
+
+2.  **WAY (The Hippocampus)**:
+    -   Vector Search (Qdrant) retrieves related knowledge.
+    -   Generates human-like answers restricted by company policy.
+
+3.  **Safety Layer**:
+    -   Hard-coded rules prevent AI from approving financial/HR requests.
+    -   Escalates high-urgency issues immediately.
 
 ### Safety-First Design
 | Action Type | Confidence | Decision |

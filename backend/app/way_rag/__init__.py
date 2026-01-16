@@ -4,6 +4,7 @@ from qdrant_client import QdrantClient
 from groq import Groq
 from fastembed import TextEmbedding
 import re
+from loguru import logger
 
 class WAYRAGEngine:
     def __init__(self):
@@ -17,7 +18,7 @@ class WAYRAGEngine:
         self.qdrant_semaphore = asyncio.Semaphore(5)  # Max 5 concurrent queries
         
         # 2. Setup Local Embedding (Free Brain for Search)
-        print("🧠 Loading Local Embedding Model...")
+        logger.info("🧠 Loading Local Embedding Model...")
         self.embed_model = TextEmbedding(model_name="BAAI/bge-small-en-v1.5")
 
     async def generate_answer(self, messages: list):
@@ -76,7 +77,7 @@ class WAYRAGEngine:
                     )
                     search_result = search_result.points
                 except asyncio.TimeoutError:
-                    print("⏱️ Qdrant query timeout (3s)")
+                    logger.warning("⏱️ Qdrant query timeout (3s)")
                     return "I'm experiencing high load. Please try again in a moment."
             
             if search_result:
@@ -84,7 +85,7 @@ class WAYRAGEngine:
             else:
                 context = "No relevant documents found."
         except Exception as e:
-            print(f"Search Error: {e}")
+            logger.error(f"Search Error: {e}")
             context = "Error retrieving context."
 
         # Step 2: Generate Answer using Groq (Free & Fast)
@@ -160,5 +161,5 @@ Use the Chat History and Retrieved Context to provide accurate, contextual answe
             questions = [q.strip() for q in raw_text.split('\n') if q.strip()]
             return questions[:3]  # Return max 3 questions
         except Exception as e:
-            print(f"Suggestion Error: {e}")
+            logger.error(f"Suggestion Error: {e}")
             return []

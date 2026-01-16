@@ -8,10 +8,25 @@ services:
     startCommand: uvicorn backend.app.main:app --host 0.0.0.0 --port $PORT
     envVars:
       - key: PYTHON_VERSION
-        value: 3.9.0
+        value: 3.10.0
+      - key: GROQ_API_KEY
+        sync: false
+      - key: ALLOWED_ORIGINS
+        sync: false
+      - key: DATABASE_URL
+        fromDatabase:
+          name: mango-db
+          property: connectionString
       - key: OPENAI_API_KEY
         sync: false
       - key: QDRANT_URL
         sync: false
       - key: QDRANT_API_KEY
         sync: false
+
+databases:
+  - name: mango-db
+    databaseName: mango_db
+    user: mango_user
+    plan: free # Note: Render Free PG expires after 90 days
+    region: singapore

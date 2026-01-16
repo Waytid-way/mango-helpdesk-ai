@@ -13,7 +13,7 @@ const LOG_LEVELS = {
 class Logger {
   constructor(name, level = 'INFO') {
     this.name = name;
-    this.level = LOG_LEVELS[level] || LOG_LEVELS.INFO;
+    this.level = LOG_LEVELS[level] ?? LOG_LEVELS.INFO;
     this.logs = [];
     this.maxLogs = 1000; // Keep last 1000 logs in memory
   }

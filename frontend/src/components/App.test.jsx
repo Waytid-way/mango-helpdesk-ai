@@ -1,78 +1,55 @@
 /**
- * App component tests
+ * App component tests - Refactored for MSW Compatibility
+ * Uses MSW for API mocking - DO NOT override global.fetch
  */
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import App from '../App';
+import { server } from '../test/mocks/server';
+import { http, HttpResponse } from 'msw';
 
-// Mock fetch globally
-global.fetch = vi.fn();
+// ❌ REMOVED: global.fetch override
+// vi.stubGlobal('fetch', vi.fn()); 
 
 describe('App Component', () => {
-  beforeEach(() => {
-    fetch.mockClear();
+  it('should render the app', async () => {
+    render(<App />);
+    expect(await screen.findByText(/System Online/i)).toBeInTheDocument();
   });
 
-  it('should render the app', () => {
+  it('should display hero section', async () => {
     render(<App />);
-    expect(screen.getByText(/Mango Helpdesk AI/i)).toBeInTheDocument();
+    expect(await screen.findByText(/WUT Orchestrator/i)).toBeInTheDocument();
+    expect(await screen.findByText(/WAY RAG Engine/i)).toBeInTheDocument();
   });
 
-  it('should display hero section', () => {
+  it('should have chat interface', async () => {
     render(<App />);
-    const heroSection = screen.getByText(/WUT.*WAY/i);
-    expect(heroSection).toBeInTheDocument();
-  });
-
-  it('should have chat interface', () => {
-    render(<App />);
-    const chatInput = screen.getByPlaceholderText(/พิมพ์คำถาม|ข้อความ/i);
+    const chatInput = await screen.findByPlaceholderText(/พิมพ์คำถาม|ข้อความ/i);
     expect(chatInput).toBeInTheDocument();
   });
 
-  it('should display initial greeting message', () => {
+  it('should display initial greeting message', async () => {
     render(<App />);
-    expect(screen.getByText(/สวัสดี/i)).toBeInTheDocument();
+    expect(await screen.findByText(/สวัสดี/i)).toBeInTheDocument();
   });
 });
 
 describe('Chat Functionality', () => {
-  beforeEach(() => {
-    fetch.mockImplementation(() =>
-      Promise.resolve({
-        ok: true,
-        json: () =>
-          Promise.resolve({
-            request_id: 'test_123',
-            department: 'IT',
-            intent: 'question',
-            urgency: 'low',
-            confidence: 0.85,
-            answer: 'This is a test response',
-            action: 'AUTO_RESOLVE',
-          }),
-      })
-    );
-  });
-
   it('should send message when button clicked', async () => {
     const user = userEvent.setup();
     render(<App />);
 
-    const input = screen.getByPlaceholderText(/พิมพ์/i);
+    const input = await screen.findByPlaceholderText(/พิมพ์/i);
     const sendButton = screen.getByRole('button', { name: /send|ส่ง/i });
 
     await user.type(input, 'Test message');
     await user.click(sendButton);
 
+    // Wait for AI response from MSW handler
     await waitFor(() => {
-      expect(fetch).toHaveBeenCalledWith(
-        expect.stringContaining('/api/query'),
-        expect.objectContaining({
-          method: 'POST',
-        })
-      );
+      expect(screen.getByText(/mocked AI response/i)).toBeInTheDocument();
     });
   });
 
@@ -80,8 +57,9 @@ describe('Chat Functionality', () => {
     const user = userEvent.setup();
     render(<App />);
 
-    const input = screen.getByPlaceholderText(/พิมพ์/i);
-    await user.type(input, 'Test message{enter}');
+    const input = await screen.findByPlaceholderText(/พิมพ์/i);
+    await user.type(input, 'Test message');
+    await user.keyboard('{Enter}');
 
     await waitFor(() => {
       expect(screen.getByText('Test message')).toBeInTheDocument();
@@ -89,46 +67,58 @@ describe('Chat Functionality', () => {
   });
 
   it('should show typing indicator', async () => {
+    // Add delay to MSW handler
+    server.use(
+      http.post('/api/chat', async () => {
+        await new Promise(resolve => setTimeout(resolve, 500));
+        return HttpResponse.json({ response: 'Delayed' });
+      })
+    );
+
     const user = userEvent.setup();
     render(<App />);
 
-    const input = screen.getByPlaceholderText(/พิมพ์/i);
-    await user.type(input, 'Test{enter}');
+    const input = await screen.findByPlaceholderText(/พิมพ์/i);
+    await user.type(input, 'Test');
+    await user.keyboard('{Enter}');
 
-    // Typing indicator should appear briefly
-    const typingIndicator = screen.queryByText(/กำลัง/i);
-    if (typingIndicator) {
-      expect(typingIndicator).toBeInTheDocument();
-    }
+    // Typing indicator should appear
+    await waitFor(() => {
+      expect(screen.getByText(/thinking/i)).toBeInTheDocument();
+    });
   });
 
   it('should clear input after sending', async () => {
     const user = userEvent.setup();
     render(<App />);
 
-    const input = screen.getByPlaceholderText(/พิมพ์/i);
+    const input = await screen.findByPlaceholderText(/พิมพ์/i);
     await user.type(input, 'Test message');
     await user.keyboard('{Enter}');
 
     await waitFor(() => {
-      expect(input.value).toBe('');
+      expect(input).toHaveValue('');
     });
   });
 });
 
 describe('Error Handling', () => {
   it('should handle API errors gracefully', async () => {
-    fetch.mockImplementationOnce(() => Promise.reject(new Error('Network error')));
+    server.use(
+      http.post('/api/chat', () => {
+        return HttpResponse.error();
+      })
+    );
 
     const user = userEvent.setup();
     render(<App />);
 
-    const input = screen.getByPlaceholderText(/พิมพ์/i);
-    await user.type(input, 'Test{enter}');
+    const input = await screen.findByPlaceholderText(/พิมพ์/i);
+    await user.type(input, 'Test');
+    await user.keyboard('{Enter}');
 
     await waitFor(() => {
-      // Should show error message or handle gracefully
-      expect(screen.queryByText(/error|ผิดพลาด/i)).toBeTruthy();
+      expect(screen.getByText(/Error/i)).toBeInTheDocument();
     });
   });
 });
@@ -138,11 +128,12 @@ describe('Dev Mode', () => {
     const user = userEvent.setup();
     render(<App />);
 
-    // Look for dev mode toggle (if exists)
-    const devToggle = screen.queryByText(/dev|development/i);
-    if (devToggle) {
-      await user.click(devToggle);
-      // Verify dev mode features are shown
-    }
+    // Wait for initial render of dev mode toggle
+    const devToggle = await screen.findByText(/Dev Mode:/i);
+    await user.click(devToggle);
+
+    await waitFor(() => {
+      expect(screen.getByText(/Dev Mode: ON/i)).toBeInTheDocument();
+    });
   });
 });

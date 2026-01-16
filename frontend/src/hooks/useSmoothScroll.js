@@ -10,15 +10,17 @@ export function useSmoothScroll() {
       smoothWheel: true,
       smoothTouch: false, // Disable on mobile for better performance
     });
-    
+
+    let requestHandle;
     function raf(time) {
       lenis.raf(time);
-      requestAnimationFrame(raf);
+      requestHandle = requestAnimationFrame(raf);
     }
-    
-    requestAnimationFrame(raf);
-    
+
+    requestHandle = requestAnimationFrame(raf);
+
     return () => {
+      cancelAnimationFrame(requestHandle);
       lenis.destroy();
     };
   }, []);
