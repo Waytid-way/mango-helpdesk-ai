@@ -142,9 +142,9 @@ jobs:
       db:
         image: postgres:15-alpine
         env:
-          POSTGRES_USER: mango_user
-          POSTGRES_PASSWORD: mango_password
-          POSTGRES_DB: mango_db
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: test_password
+          POSTGRES_DB: mango_test
         ports:
           - 5432:5432
         options: >-
@@ -173,7 +173,7 @@ jobs:
       - name: 🧪 Run Backend Tests
         env:
           QDRANT_URL: ${{ env.QDRANT_URL }}
-          DATABASE_URL: postgresql+asyncpg://mango_user:mango_password@localhost:5432/mango_db
+          DATABASE_URL: postgresql+asyncpg://postgres:test_password@localhost:5432/mango_test
           GROQ_API_KEY: ${{ secrets.GROQ_API_KEY != '' && secrets.GROQ_API_KEY || 'test_key_for_ci' }}
         run: |
           cd backend
