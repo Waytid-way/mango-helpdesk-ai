@@ -32,7 +32,7 @@ class TestQueryEndpoint:
     
     def test_query_success_thai(self, client, sample_query):
         """Test successful query processing with Thai text"""
-        response = client.post("/api/query", json=sample_query)
+        response = client.post("/api/chat", json=sample_query)
         
         assert response.status_code == status.HTTP_200_OK
         data = response.json()
@@ -53,7 +53,7 @@ class TestQueryEndpoint:
     
     def test_query_success_english(self, client, sample_query_en):
         """Test successful query processing with English text"""
-        response = client.post("/api/query", json=sample_query_en)
+        response = client.post("/api/chat", json=sample_query_en)
         
         assert response.status_code == status.HTTP_200_OK
         data = response.json()
@@ -62,25 +62,25 @@ class TestQueryEndpoint:
     
     def test_query_default_language(self, client):
         """Test query with default language (Thai)"""
-        response = client.post("/api/query", json={"text": "test query"})
+        response = client.post("/api/chat", json={"text": "test query"})
         
         assert response.status_code == status.HTTP_200_OK
         # Should default to Thai if not specified
     
     def test_query_empty_text(self, client):
         """Test query with empty text should fail validation"""
-        response = client.post("/api/query", json={"text": ""})
+        response = client.post("/api/chat", json={"text": ""})
         assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
     
     def test_query_missing_text(self, client):
         """Test query without text field should fail"""
-        response = client.post("/api/query", json={"language": "th"})
+        response = client.post("/api/chat", json={"language": "th"})
         assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
     
     def test_query_invalid_json(self, client):
         """Test query with invalid JSON"""
         response = client.post(
-            "/api/query",
+            "/api/chat",
             data="invalid json",
             headers={"Content-Type": "application/json"}
         )
@@ -89,7 +89,7 @@ class TestQueryEndpoint:
     def test_query_long_text(self, client):
         """Test query with very long text"""
         long_text = "ทดสอบ" * 1000  # Very long text
-        response = client.post("/api/query", json={"text": long_text, "language": "th"})
+        response = client.post("/api/chat", json={"text": long_text, "language": "th"})
         
         # Should still process (or handle gracefully)
         assert response.status_code in [status.HTTP_200_OK, status.HTTP_413_REQUEST_ENTITY_TOO_LARGE]
@@ -97,13 +97,13 @@ class TestQueryEndpoint:
     def test_query_special_characters(self, client):
         """Test query with special characters"""
         special_text = "Test @#$%^&*() การทดสอบ 🚀 emoji"
-        response = client.post("/api/query", json={"text": special_text})
+        response = client.post("/api/chat", json={"text": special_text})
         
         assert response.status_code == status.HTTP_200_OK
     
     def test_query_response_fields(self, client, sample_query):
         """Test all expected fields are present in response"""
-        response = client.post("/api/query", json=sample_query)
+        response = client.post("/api/chat", json=sample_query)
         data = response.json()
         
         required_fields = [
@@ -116,7 +116,7 @@ class TestQueryEndpoint:
     
     def test_query_confidence_range(self, client, sample_query):
         """Test confidence score is within valid range"""
-        response = client.post("/api/query", json=sample_query)
+        response = client.post("/api/chat", json=sample_query)
         data = response.json()
         
         assert 0.0 <= data["confidence"] <= 1.0
@@ -128,7 +128,7 @@ class TestCORS:
     def test_cors_headers_present(self, client):
         """Test CORS headers are properly set"""
         response = client.options(
-            "/api/query",
+            "/api/chat",
             headers={"Origin": "http://localhost:3000"}
         )
         
@@ -146,5 +146,5 @@ class TestErrorHandling:
     
     def test_405_on_wrong_method(self, client):
         """Test 405 on wrong HTTP method"""
-        response = client.get("/api/query")  # Should be POST
+        response = client.get("/api/chat")  # Should be POST
         assert response.status_code == status.HTTP_405_METHOD_NOT_ALLOWED
