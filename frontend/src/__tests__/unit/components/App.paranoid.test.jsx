@@ -389,7 +389,7 @@ describe('App Component - PARANOID MODE', () => {
             await waitFor(() => expect(screen.getByText(/Test message/i)).toBeInTheDocument());
 
             // Click reset
-            const resetButton = screen.getByText(/Reset Chat/i);
+            const resetButton = await screen.findByText(/Reset Chat/i);
             await userEvent.click(resetButton);
 
             // Old message should be gone
