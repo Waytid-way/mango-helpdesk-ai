@@ -389,8 +389,15 @@ describe('App Component - PARANOID MODE', () => {
             await waitFor(() => expect(screen.getByText(/Test message/i)).toBeInTheDocument());
 
             // Click reset - Fixed: use findByText instead of getByText for async rendering
-            const resetButton = await screen.findByText(/Reset Chat/i);
-            await userEvent.click(resetButton);
+    // ✅ Wait for isTyping to be false before clicking reset
+    await waitFor(() => {
+      expect(screen.queryByText(/thinking/i)).not.toBeInTheDocument();
+    });
+
+    // ✅ Fixed: Use correct button text that matches App.jsx
+    const resetButton = await screen.findByText(/Reset Chat & Stats/i);
+    expect(resetButton).not.toBeDisabled();
+    
 
             // Old message should be gone
             await waitFor(() => {
