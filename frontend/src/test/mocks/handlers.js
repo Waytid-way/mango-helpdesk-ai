@@ -64,4 +64,9 @@ export const handlers = [
             { status: 429 }
         );
     }),
+
+    // Success: Logs endpoint
+    http.post('/api/logs', () => {
+        return HttpResponse.json({ success: true });
+    }),
 ];
