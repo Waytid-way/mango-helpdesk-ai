@@ -2,25 +2,34 @@ from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from typing import List
+import os
 from contextlib import asynccontextmanager
 from slowapi import Limiter, _rate_limit_exceeded_handler
 from slowapi.util import get_remote_address
 from slowapi.errors import RateLimitExceeded
 from .database import init_db
 from .way_rag import WAYRAGEngine
+from .wut_orchestrator import WUTClassifier
+from .core.logger import setup_logging
+from loguru import logger
 
 # Global variable to hold the brain
 rag_engine = None
+wut_classifier = None
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
+    # Setup Logging
+    setup_logging()
+    
     # Load Model ONCE when server starts
-    global rag_engine
-    print("🚀 Booting up FastEmbed Brain...")
-    init_db()
+    global rag_engine, wut_classifier
+    logger.info("🚀 Booting up FastEmbed Brain...")
+    await init_db()
     rag_engine = WAYRAGEngine()
+    wut_classifier = WUTClassifier()
     yield
-    print("💤 Shutting down...")
+    logger.info("💤 Shutting down...")
 
 app = FastAPI(lifespan=lifespan)
 
@@ -29,9 +38,13 @@ limiter = Limiter(key_func=get_remote_address, default_limits=["100/minute"])
 app.state.limiter = limiter
 app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 
+# CORS Setup - Secure by default
+allowed_origins = os.getenv("ALLOWED_ORIGINS", "http://localhost:3000").split(",")
+logger.info(f"CORS Allowed Origins: {allowed_origins}")
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=allowed_origins,
     allow_methods=["*"],
     allow_headers=["*"],
 )
@@ -94,8 +107,14 @@ async def chat(request: Request, chat_request: ChatRequest):
     chat_history = messages_list[-6:] if len(messages_list) > 6 else messages_list
     
     # Use the pre-loaded brain with conversation context (now async)
+    classification = await wut_classifier.classify(chat_request.messages[-1].content)
+    logger.info(f"🧠 WUT Classification: {classification}")
+    
     response = await rag_engine.generate_answer(chat_history)
-    return {"response": response}
+    return {
+        "response": response,
+        "meta": classification
+    }
 
 class SuggestionRequest(BaseModel):
     last_answer: str

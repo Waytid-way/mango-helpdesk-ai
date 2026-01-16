@@ -1,21 +1,29 @@
-from sqlmodel import SQLModel, create_engine, Session, select
+from sqlmodel import SQLModel, select
+from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
+from sqlalchemy.orm import sessionmaker
 from .models import SystemConfig
 from passlib.context import CryptContext
-from pathlib import Path
+from loguru import logger
+import os
 
-BASE_DIR = Path(__file__).resolve().parent
-sqlite_file_name = BASE_DIR / "rag_config.db"
-sqlite_url = f"sqlite:///{sqlite_file_name}"
+DATABASE_URL = os.getenv("DATABASE_URL", "postgresql+asyncpg://mango_user:mango_password@localhost:5432/mango_db")
 
-engine = create_engine(sqlite_url, connect_args={"check_same_thread": False})
+engine = create_async_engine(DATABASE_URL, echo=False, future=True)
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
-def init_db():
-    SQLModel.metadata.create_all(engine)
-    with Session(engine) as session:
-        config = session.exec(select(SystemConfig)).first()
+async def init_db():
+    async with engine.begin() as conn:
+        await conn.run_sync(SQLModel.metadata.create_all)
+    
+    async_session = sessionmaker(
+        engine, class_=AsyncSession, expire_on_commit=False
+    )
+
+    async with async_session() as session:
+        result = await session.exec(select(SystemConfig))
+        config = result.first()
         if not config:
-            print("⚙️ Seeding default config...")
+            logger.info("⚙️ Seeding default config...")
             # Pre-computed bcrypt hash for password "admin"
             default_hash = "$2b$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/LewY5GyYIr.vQZOpm"
             default_config = SystemConfig(
@@ -25,4 +33,4 @@ def init_db():
                 admin_password_hash=default_hash
             )
             session.add(default_config)
-            session.commit()
+            await session.commit()
