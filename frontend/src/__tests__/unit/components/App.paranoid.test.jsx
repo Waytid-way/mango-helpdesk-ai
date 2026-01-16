@@ -34,33 +34,24 @@ describe('App Component - PARANOID MODE', () => {
 
         it('should display the main heading', async () => {
             render(<App />);
-            await waitFor(() => {
-                expect(screen.getByText(/Revolutionizing Support/i)).toBeInTheDocument();
-            });
+            expect(await screen.findByText(/Revolutionizing Support/i)).toBeInTheDocument();
         });
 
         it('should show initial greeting message', async () => {
             render(<App />);
-            await waitFor(() => {
-                expect(screen.getByText(/สวัสดีครับ/i)).toBeInTheDocument();
-            });
+            expect(await screen.findByText(/สวัสดีครับ/i)).toBeInTheDocument();
         });
 
         it('should render all major sections', async () => {
             render(<App />);
-            await waitFor(() => {
-                expect(screen.getByText(/The Challenge at Mango Consultant/i)).toBeInTheDocument();
-                expect(screen.getByText(/WUT \+ WAY Architecture/i)).toBeInTheDocument();
-                expect(screen.getByText(/Interactive Demo/i)).toBeInTheDocument();
-            });
+            expect(await screen.findByText(/The Challenge at Mango Consultant/i)).toBeInTheDocument();
+            expect(await screen.findByText(/WUT \+ WAY Architecture/i)).toBeInTheDocument();
+            expect(await screen.findByText(/Interactive Demo/i)).toBeInTheDocument();
         });
 
         it('should have accessible navigation', async () => {
             render(<App />);
-            await waitFor(() => {
-                const nav = screen.getByRole('navigation', { hidden: true });
-                expect(nav).toBeInTheDocument();
-            });
+            expect(await screen.findByRole('navigation', { hidden: true })).toBeInTheDocument();
         });
     });
 
@@ -124,7 +115,7 @@ describe('App Component - PARANOID MODE', () => {
 
             // Should not crash and input should still exist
             expect(input).toBeInTheDocument();
-        });
+        }, 20000); // 20s timeout for long message test
 
         it('should handle special characters safely', async () => {
             render(<App />);
