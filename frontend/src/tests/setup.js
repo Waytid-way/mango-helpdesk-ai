@@ -1,31 +1,19 @@
 import { vi } from 'vitest';
 import { cleanup } from '@testing-library/react';
 import '@testing-library/jest-dom';
+import { server } from '../test/mocks/server';
 
-// Cleanup after each test
+// MSW Lifecycle
+beforeAll(() => server.listen({ onUnhandledRequest: 'warn' }));
 afterEach(() => {
     cleanup();
-
-    // Clear all mocks
+    server.resetHandlers();
     vi.clearAllMocks();
+    localStorage.clear();
 });
+afterAll(() => server.close());
 
-// Global fetch mock
-global.fetch = vi.fn();
-
-// Reset fetch mock before each test
-beforeEach(() => {
-    global.fetch.mockClear();
-    global.fetch.mockImplementation(() =>
-        Promise.resolve({
-            ok: true,
-            status: 200,
-            json: async () => ({ response: 'Test response from helpdesk AI' }),
-        })
-    );
-});
-
-// Mock window.matchMedia
+// Browser API Mocks
 Object.defineProperty(window, 'matchMedia', {
     writable: true,
     value: vi.fn().mockImplementation((query) => ({
@@ -40,7 +28,6 @@ Object.defineProperty(window, 'matchMedia', {
     })),
 });
 
-// Mock IntersectionObserver
 global.IntersectionObserver = class IntersectionObserver {
     constructor() { }
     disconnect() { }
@@ -49,28 +36,12 @@ global.IntersectionObserver = class IntersectionObserver {
     unobserve() { }
 };
 
-// Mock ResizeObserver
 const ResizeObserverMock = vi.fn(() => ({
     disconnect: vi.fn(),
     observe: vi.fn(),
     unobserve: vi.fn(),
 }));
-
 vi.stubGlobal('ResizeObserver', ResizeObserverMock);
-window.ResizeObserver = ResizeObserverMock;
 
-// Suppress act() warnings
-const originalError = console.error;
-beforeAll(() => {
-    console.error = (...args) => {
-        if (args[0]?.includes?.('Warning: An update to') ||
-            args[0]?.includes?.('act(...)')) {
-            return;
-        }
-        originalError.call(console, ...args);
-    };
-});
-
-afterAll(() => {
-    console.error = originalError;
-});
+window.HTMLElement.prototype.scrollIntoView = vi.fn();
+window.scrollTo = vi.fn();
